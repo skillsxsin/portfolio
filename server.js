@@ -1,7 +1,30 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { fork } = require('child_process');
+
+const PASSWORD_SALT = process.env.PASSWORD_SALT || 'bhavya_salt_2026';
+// Irreversible salted PBKDF2-SHA512 cryptographic hash
+const DEFAULT_SALTED_PASSWORD_HASH = '2cb5c6565ccad2153b0163b638ce00def25f6d11a5ea020dee92f9d7838ea48c8efe45e5752dd818be37c22734994b7200e68ee85bc8c5eb996c196a25554fbe';
+
+function getExpectedPasswordHash() {
+    if (process.env.ADMIN_PASSWORD_HASH) return process.env.ADMIN_PASSWORD_HASH;
+    if (process.env.ADMIN_PASSWORD) return crypto.pbkdf2Sync(process.env.ADMIN_PASSWORD, PASSWORD_SALT, 1000, 64, 'sha512').toString('hex');
+    return DEFAULT_SALTED_PASSWORD_HASH;
+}
+
+function constantTimeEquals(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
+    const bufA = Buffer.from(a, 'utf8');
+    const bufB = Buffer.from(b, 'utf8');
+    if (bufA.length !== bufB.length) return false;
+    return crypto.timingSafeEqual(bufA, bufB);
+}
+
+const SESSION_COOKIE_NAME = 'session_id';
+const activeSessions = new Map();
+const loginAttempts = new Map();
 
 const PORT = process.env.PORT || 3000;
 const GAME_PORT = process.env.GAME_PORT || 3003;
@@ -1028,7 +1051,7 @@ const server = http.createServer((req, res) => {
                 // Hash entered password using PBKDF2
                 const enteredHash = crypto.pbkdf2Sync(data.password || '', PASSWORD_SALT, 1000, 64, 'sha512').toString('hex');
                 
-                if (enteredHash === PASSWORD_HASH) {
+                if (constantTimeEquals(enteredHash, getExpectedPasswordHash())) {
                     // Success: Reset rate limiting for this IP
                     loginAttempts.delete(ip);
 

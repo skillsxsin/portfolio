@@ -65,17 +65,30 @@ async function pbkdf2Hash(password, salt) {
     return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Pre-computed password hash (supports Cloudflare Secret env.ADMIN_PASSWORD)
-let _passwordHash = null;
-async function getPasswordHash(env) {
+// Irreversible salted PBKDF2-SHA512 cryptographic hash (zero plaintext stored in codebase)
+const DEFAULT_SALTED_PASSWORD_HASH = '2cb5c6565ccad2153b0163b638ce00def25f6d11a5ea020dee92f9d7838ea48c8efe45e5752dd818be37c22734994b7200e68ee85bc8c5eb996c196a25554fbe';
+
+/** Constant-time string equality to prevent timing attacks / side-channel reverse engineering */
+function constantTimeEquals(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string' || a.length !== b.length) {
+        return false;
+    }
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+        result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+    return result === 0;
+}
+
+async function getExpectedPasswordHash(env) {
+    if (env && env.ADMIN_PASSWORD_HASH) {
+        return env.ADMIN_PASSWORD_HASH;
+    }
     if (env && env.ADMIN_PASSWORD) {
         const salt = env.PASSWORD_SALT || PASSWORD_SALT;
         return await pbkdf2Hash(env.ADMIN_PASSWORD, salt);
     }
-    if (!_passwordHash) {
-        _passwordHash = await pbkdf2Hash('pink AP26 aircrack', PASSWORD_SALT);
-    }
-    return _passwordHash;
+    return DEFAULT_SALTED_PASSWORD_HASH;
 }
 
 /** SHA-1 ETag */
@@ -806,9 +819,9 @@ export async function onRequest(context) {
             }
 
             const enteredHash = await pbkdf2Hash(body.password || '', env.PASSWORD_SALT || PASSWORD_SALT);
-            const correctHash = await getPasswordHash(env);
+            const expectedHash = await getExpectedPasswordHash(env);
 
-            if (enteredHash === correctHash) {
+            if (constantTimeEquals(enteredHash, expectedHash)) {
                 await setLoginAttempts(env, ip, { count: 0, blockUntil: 0 }, SESSION_TTL_SECONDS);
                 const sid = await createSession(env);
                 const expires = new Date(Date.now() + SESSION_TTL_SECONDS * 1000).toUTCString();
