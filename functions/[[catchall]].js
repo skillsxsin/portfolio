@@ -65,9 +65,13 @@ async function pbkdf2Hash(password, salt) {
     return Array.from(new Uint8Array(bits)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// Pre-computed password hash (computed lazily on first login)
+// Pre-computed password hash (supports Cloudflare Secret env.ADMIN_PASSWORD)
 let _passwordHash = null;
-async function getPasswordHash() {
+async function getPasswordHash(env) {
+    if (env && env.ADMIN_PASSWORD) {
+        const salt = env.PASSWORD_SALT || PASSWORD_SALT;
+        return await pbkdf2Hash(env.ADMIN_PASSWORD, salt);
+    }
     if (!_passwordHash) {
         _passwordHash = await pbkdf2Hash('pink AP26 aircrack', PASSWORD_SALT);
     }
@@ -801,8 +805,8 @@ export async function onRequest(context) {
                 return textResponse('Bad Request', 400);
             }
 
-            const enteredHash = await pbkdf2Hash(body.password || '', PASSWORD_SALT);
-            const correctHash = await getPasswordHash();
+            const enteredHash = await pbkdf2Hash(body.password || '', env.PASSWORD_SALT || PASSWORD_SALT);
+            const correctHash = await getPasswordHash(env);
 
             if (enteredHash === correctHash) {
                 await setLoginAttempts(env, ip, { count: 0, blockUntil: 0 }, SESSION_TTL_SECONDS);
