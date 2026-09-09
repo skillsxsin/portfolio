@@ -3,329 +3,1289 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Projects CMS Panel - Bhavya Jangid</title>
+    <title>Executive Admin Control Center - Bhavya Jangid</title>
     <meta name="robots" content="noindex, nofollow">
-    <!-- Favicon link -->
     <link rel="icon" type="image/png" href="favicon.png">
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <!-- Stylesheet -->
-    <link rel="stylesheet" href="styles.css?v=1.0.2">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Core Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.0.3">
+    
     <style>
-        .admin-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-top: 1rem;
+        :root {
+            --admin-card-bg: rgba(10, 14, 25, 0.75);
+            --admin-border: rgba(255, 255, 255, 0.12);
+            --admin-accent: #ffcc00;
+            --admin-accent-rgb: 255, 204, 0;
+            --admin-danger: #ff5f56;
+            --admin-success: #27c93f;
+            --admin-info: #00d2ff;
         }
-        @media (max-width: 900px) {
-            .admin-grid {
-                grid-template-columns: 1fr;
-            }
+
+        body {
+            background-color: #060913;
+            color: #e2e8f0;
+            font-family: 'Outfit', -apple-system, sans-serif;
+            min-height: 100vh;
         }
-        .db-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: rgba(10, 14, 25, 0.4);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            overflow: hidden;
-            font-size: 0.85rem;
-            margin-top: 1rem;
+
+        .admin-wrapper {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 1.5rem 1rem 4rem 1rem;
         }
-        .db-table th, .db-table td {
-            padding: 10px 14px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
+
+        /* Top Bar */
+        .admin-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: var(--admin-card-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+            margin-bottom: 1.5rem;
         }
-        .db-table th {
-            background: rgba(0, 0, 0, 0.4);
-            color: var(--accent-color);
-            font-family: var(--font-mono);
-            font-size: 0.72rem;
-            letter-spacing: 0.1em;
+
+        .admin-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .admin-brand img {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 8px rgba(255,204,0,0.3));
+        }
+
+        .admin-title-group h1 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .admin-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            background: rgba(var(--admin-accent-rgb), 0.15);
+            color: var(--admin-accent);
+            border: 1px solid rgba(var(--admin-accent-rgb), 0.3);
             text-transform: uppercase;
         }
-        .db-table tr:hover {
-            background: rgba(255, 255, 255, 0.01);
-        }
-        .delete-btn {
-            background: rgba(255, 95, 86, 0.15);
-            border: 1px solid #ff5f56;
-            color: #ff8e88;
+
+        .admin-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            background: rgba(0, 0, 0, 0.4);
             padding: 4px 10px;
-            border-radius: 4px;
+            border-radius: 8px;
+            border: 1px solid var(--admin-border);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--admin-success);
+            box-shadow: 0 0 8px var(--admin-success);
+        }
+
+        .admin-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        /* Nav Tabs */
+        .admin-tabs {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(5, 7, 12, 0.85);
+            padding: 0.4rem;
+            border-radius: 14px;
+            border: 1px solid var(--admin-border);
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        .admin-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1.25rem;
+            border-radius: 10px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 700;
             cursor: pointer;
-            font-family: var(--font-mono);
-            font-size: 0.7rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .admin-tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-tab-btn.active {
+            color: #05070c;
+            background: var(--admin-accent);
+            box-shadow: 0 4px 14px rgba(var(--admin-accent-rgb), 0.35);
+        }
+
+        /* Metric Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: var(--admin-card-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 16px;
+            padding: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--admin-accent), transparent);
+        }
+
+        .metric-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.35rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-hint {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Content Panel Layout */
+        .admin-panel {
+            background: var(--admin-card-bg);
+            border: 1px solid var(--admin-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(16px);
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 1.25rem;
+        }
+
+        .panel-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Forms & Inputs */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            background: rgba(5, 7, 12, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-family: inherit;
             transition: all 0.2s ease;
         }
-        .delete-btn:hover {
-            background: #ff5f56;
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--admin-accent);
+            box-shadow: 0 0 0 3px rgba(var(--admin-accent-rgb), 0.2);
+            background: rgba(10, 14, 25, 0.95);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+
+        .admin-table th {
+            background: rgba(0, 0, 0, 0.5);
+            color: var(--admin-accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-table td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            color: #cbd5e1;
+            vertical-align: middle;
+        }
+
+        .admin-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+            color: #ffffff;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.65rem 1.25rem;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--admin-accent);
             color: #05070c;
-            box-shadow: 0 0 10px rgba(255, 95, 86, 0.3);
+            box-shadow: 0 4px 14px rgba(var(--admin-accent-rgb), 0.25);
+        }
+
+        .btn-primary:hover {
+            background: #ffe066;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(var(--admin-accent-rgb), 0.35);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+
+        .btn-danger {
+            background: rgba(255, 95, 86, 0.15);
+            color: #ff8e88;
+            border: 1px solid rgba(255, 95, 86, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: var(--admin-danger);
+            color: #05070c;
+            box-shadow: 0 4px 12px rgba(255, 95, 86, 0.3);
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.72rem;
+            border-radius: 8px;
+        }
+
+        /* Modal Overlay */
+        .admin-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .admin-modal-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .admin-modal {
+            background: #0a0e1b;
+            border: 1px solid var(--admin-border);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+            transform: translateY(20px);
+            transition: transform 0.2s ease;
+        }
+
+        .admin-modal-backdrop.active .admin-modal {
+            transform: translateY(0);
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            padding: 0.85rem 1.25rem;
+            background: #0a0e1b;
+            border: 1px solid var(--admin-border);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-family: 'JetBrains Mono', monospace;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        .toast.success { border-color: var(--admin-success); color: #86efac; }
+        .toast.error { border-color: var(--admin-danger); color: #fca5a5; }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .preview-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 1rem;
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+            line-height: 1.6;
         }
     </style>
 </head>
-<body class="theme-custom details-page-body">
-    <!-- Fixed Beach background container -->
-    <div class="fixed-beach-bg"></div>
+<body>
 
-    <div class="details-layout-wrapper" style="max-width: 1100px;">
-        
-        <!-- Sticky Navigation Header -->
-        <header class="details-header">
-            <a href="/" class="details-logo-area">
-                ➔ BACK TO HOME
-            </a>
-            <nav class="details-nav-links">
-                <a href="/admin-blogs" class="details-nav-item">BLOG CMS</a>
-                <a href="/admin-projects" class="details-nav-item active">PROJECT CMS</a>
-                <a href="#" id="btnLogout" class="details-nav-item" style="color: #ff5f56;">LOGOUT</a>
-            </nav>
+    <div class="admin-wrapper">
+
+        <!-- Top Header Bar -->
+        <header class="admin-top-bar">
+            <div class="admin-brand">
+                <img src="favicon.png" alt="Bhavya Jangid">
+                <div class="admin-title-group">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <h1>Bhavya Jangid</h1>
+                        <span class="admin-badge">Admin Console</span>
+                    </div>
+                    <p style="font-size: 0.75rem; color: #64748b; margin: 0; font-family: 'JetBrains Mono', monospace;">
+                        bhavyajangid.com / System Manager
+                    </p>
+                </div>
+            </div>
+
+            <div class="admin-actions">
+                <div class="admin-status-pill">
+                    <span class="status-dot"></span>
+                    <span>Edge KV: Live</span>
+                </div>
+                <a href="/" target="_blank" class="btn btn-secondary btn-sm">
+                    🌐 Open Live Site
+                </a>
+                <button id="btnLogout" class="btn btn-danger btn-sm">
+                    🔒 Logout
+                </button>
+            </div>
         </header>
 
-        <!-- Route Banner -->
-        <div class="breadcrumb-banner">
-            <span class="path-root">System</span> / <span class="path-node">CMS_Projects_Console.sh</span>
+        <!-- Navigation Tabs -->
+        <nav class="admin-tabs">
+            <button class="admin-tab-btn active" data-tab="tab-overview">
+                📊 Overview
+            </button>
+            <button class="admin-tab-btn" data-tab="tab-projects">
+                💼 Projects Catalog
+            </button>
+            <button class="admin-tab-btn" data-tab="tab-blogs">
+                📝 Blog CMS
+            </button>
+            <button class="admin-tab-btn" data-tab="tab-contacts">
+                📬 Inquiries Inbox <span id="badgeInboxCount" style="background: rgba(255,204,0,0.2); padding: 1px 6px; border-radius: 6px; font-size: 0.7rem;">0</span>
+            </button>
+            <button class="admin-tab-btn" data-tab="tab-settings">
+                ⚙️ Site Profile & Socials
+            </button>
+            <button class="admin-tab-btn" data-tab="tab-database">
+                💾 Database Backup & JSON
+            </button>
+        </nav>
+
+        <!-- ======================================================= -->
+        <!-- TAB 1: OVERVIEW & SYSTEM METRICS -->
+        <!-- ======================================================= -->
+        <div id="tab-overview" class="tab-content active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Engineering Projects</div>
+                    <div class="metric-value" id="metricProjectsCount">0</div>
+                    <div class="metric-hint">Active showcase catalog</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Published Articles</div>
+                    <div class="metric-value" id="metricBlogsCount">0</div>
+                    <div class="metric-hint">Dynamic SSR blog records</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Contact Submissions</div>
+                    <div class="metric-value" id="metricContactsCount">0</div>
+                    <div class="metric-hint">Messages in database inbox</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Storage Engine</div>
+                    <div class="metric-value" style="font-size: 1.25rem; color: var(--admin-accent); padding-top: 0.5rem;">Cloudflare KV</div>
+                    <div class="metric-hint">Global multi-region replication</div>
+                </div>
+            </div>
+
+            <!-- Quick Action Hub -->
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        ⚡ Quick Management Operations
+                    </div>
+                </div>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-secondary" onclick="switchTab('tab-projects'); openProjectModal();">
+                        ➕ New Project
+                    </button>
+                    <button class="btn btn-secondary" onclick="switchTab('tab-blogs'); openBlogModal();">
+                        ✍️ New Blog Post
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadDbBackup();">
+                        📥 Download Full JSON Backup
+                    </button>
+                    <a href="/sitemap.xml" target="_blank" class="btn btn-secondary">
+                        🗺️ View Live Sitemap.xml
+                    </a>
+                    <a href="/llms.txt" target="_blank" class="btn btn-secondary">
+                        🤖 View LLM Index Profile
+                    </a>
+                </div>
+            </div>
         </div>
 
-        <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem; text-shadow: 0 4px 10px rgba(0,0,0,0.5);">Engine Projects CMS Console</h2>
-        <p class="details-text" style="margin-bottom: 2rem;">Manage the projects and engineering products catalog shown on the portfolio.</p>
+        <!-- ======================================================= -->
+        <!-- TAB 2: PROJECTS CATALOG MANAGER -->
+        <!-- ======================================================= -->
+        <div id="tab-projects" class="tab-content" style="display: none;">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        💼 Engineering Projects Catalog
+                    </div>
+                    <button class="btn btn-primary" onclick="openProjectModal()">
+                        ➕ Add New Project
+                    </button>
+                </div>
 
-        <div class="admin-grid">
-            
-            <!-- Project Creator Form -->
-            <section class="details-card-section" style="margin-bottom: 0;">
-                <div class="card-bracket top-left"></div>
-                <div class="card-bracket top-right"></div>
-                <div class="card-bracket bottom-left"></div>
-                <div class="card-bracket bottom-right"></div>
-                
-                <h3 class="details-card-title">✦ PUBLISH PROJECT</h3>
-                <form class="details-contact-form" id="formAddProject">
-                    <div class="details-form-group">
-                        <label for="projTitle">Project Title</label>
-                        <input type="text" id="projTitle" required placeholder="e.g. 3D Renderer">
+                <div class="table-responsive">
+                    <table class="admin-table" id="projectsTable">
+                        <thead>
+                            <tr>
+                                <th>Project Title</th>
+                                <th>Category</th>
+                                <th>Stack Tags</th>
+                                <th>Links</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectsTableBody">
+                            <tr><td colspan="5" style="text-align: center; color: #64748b;">Loading projects catalog...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- TAB 3: BLOG CMS & ARTICLE PUBLISHER -->
+        <!-- ======================================================= -->
+        <div id="tab-blogs" class="tab-content" style="display: none;">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        📝 Articles & Blog CMS
                     </div>
-                    <div class="details-form-group">
-                        <label for="projCategory">Category</label>
-                        <input type="text" id="projCategory" required placeholder="e.g. Frontend Engine, Audio Synth, Graphics Engine">
+                    <button class="btn btn-primary" onclick="openBlogModal()">
+                        ✍️ Write New Article
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table" id="blogsTable">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Slug / URL</th>
+                                <th>Category</th>
+                                <th>Date</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="blogsTableBody">
+                            <tr><td colspan="5" style="text-align: center; color: #64748b;">Loading blogs...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- TAB 4: CONTACT INQUIRIES INBOX -->
+        <!-- ======================================================= -->
+        <div id="tab-contacts" class="tab-content" style="display: none;">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        📬 Contact Form Submissions
                     </div>
-                    <div class="details-form-group">
-                        <label for="projTags">Tags (comma separated)</label>
-                        <input type="text" id="projTags" required placeholder="e.g. Web Audio, LFO, JS, Canvas">
+                    <button class="btn btn-danger btn-sm" onclick="clearAllContacts()">
+                        🗑️ Clear All Inquiries
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="admin-table" id="contactsTable">
+                        <thead>
+                            <tr>
+                                <th>Date & Time</th>
+                                <th>Sender Name</th>
+                                <th>Sender Email</th>
+                                <th>Message</th>
+                                <th>IP Address</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contactsTableBody">
+                            <tr><td colspan="6" style="text-align: center; color: #64748b;">Loading inquiries...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- TAB 5: SITE PROFILE & SOCIAL SETTINGS -->
+        <!-- ======================================================= -->
+        <div id="tab-settings" class="tab-content" style="display: none;">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        ⚙️ Global Site Profile & Social Links
                     </div>
-                    <div class="details-form-group">
-                        <label for="projGithub">GitHub Link</label>
-                        <input type="url" id="projGithub" required placeholder="https://github.com/profile/repo">
+                </div>
+
+                <form id="settingsForm" class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="settingName" class="form-input" value="Bhavya Jangid" required>
                     </div>
-                    <div class="details-form-group">
-                        <label for="projLive">Live Demo URL (use '#' if none)</label>
-                        <input type="text" id="projLive" required value="#">
+
+                    <div class="form-group">
+                        <label class="form-label">Professional Title</label>
+                        <input type="text" id="settingTitle" class="form-input" value="Product Analyst & Web Developer" required>
                     </div>
-                    <div class="details-form-group">
-                        <label for="projDesc">Short Description</label>
-                        <textarea id="projDesc" rows="5" required placeholder="Brief summary of what this project compiles into..."></textarea>
+
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" id="settingEmail" class="form-input" value="jangidbhavya99@gmail.com" required>
                     </div>
-                    <button type="submit" class="details-submit-btn">PUBLISH SIGNAL ➔</button>
+
+                    <div class="form-group">
+                        <label class="form-label">WhatsApp Contact Number</label>
+                        <input type="text" id="settingWhatsApp" class="form-input" value="+91 8955136723" placeholder="+91 XXXXXXXXXX">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">GitHub Profile URL</label>
+                        <input type="url" id="settingGitHub" class="form-input" value="https://github.com/skillsxsin">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">LinkedIn Profile URL</label>
+                        <input type="url" id="settingLinkedIn" class="form-input" value="https://www.linkedin.com/in/bhavya-jangid/">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label class="form-label">Headline Bio Summary</label>
+                        <textarea id="settingBio" class="form-textarea" rows="3">Designing automations, LLMs, agentic systems, future predictions, and crafting premium, interactive product frontends.</textarea>
+                    </div>
+
+                    <div class="form-group full-width" style="margin-top: 1rem;">
+                        <button type="submit" class="btn btn-primary">
+                            💾 Save Profile Settings
+                        </button>
+                    </div>
                 </form>
-            </section>
-
-            <!-- Managed Projects Table View -->
-            <section class="details-card-section" style="margin-bottom: 0;">
-                <div class="card-bracket top-left"></div>
-                <div class="card-bracket top-right"></div>
-                <div class="card-bracket bottom-left"></div>
-                <div class="card-bracket bottom-right"></div>
-                
-                <h3 class="details-card-title">✦ PORTFOLIO PRODUCTS</h3>
-                <table class="db-table" id="tableProjects">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Category</th>
-                            <th>Tags</th>
-                            <th style="width: 80px;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Syncing database...</td></tr>
-                    </tbody>
-                </table>
-            </section>
-
+            </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="details-footer">
-            <p>© 2026 Bhavya Jangid. Admin Projects Console.</p>
-        </footer>
+        <!-- ======================================================= -->
+        <!-- TAB 6: DATABASE BACKUP & RAW JSON EDITOR -->
+        <!-- ======================================================= -->
+        <div id="tab-database" class="tab-content" style="display: none;">
+            <div class="admin-panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        💾 Database Backup & Direct JSON Sync
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-secondary btn-sm" onclick="downloadDbBackup()">
+                            📥 Export db.json
+                        </button>
+                        <label class="btn btn-secondary btn-sm" style="cursor: pointer; margin: 0;">
+                            📤 Import db.json
+                            <input type="file" id="dbFileInput" accept=".json" style="display: none;" onchange="importDbFile(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <p style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 1rem;">
+                    Edit the raw database schema below to make instant bulk modifications across all projects, blog articles, and settings.
+                </p>
+
+                <textarea id="rawJsonEditor" class="form-textarea" style="min-height: 380px; font-size: 0.85rem;"></textarea>
+
+                <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+                    <button class="btn btn-primary" onclick="saveRawJson()">
+                        ⚡ Apply Raw JSON to Cloudflare KV
+                    </button>
+                    <button class="btn btn-secondary" onclick="loadDatabase()">
+                        🔄 Reload From KV
+                    </button>
+                </div>
+            </div>
+        </div>
 
     </div>
 
+    <!-- ======================================================= -->
+    <!-- PROJECT MODAL (ADD / EDIT) -->
+    <!-- ======================================================= -->
+    <div id="projectModal" class="admin-modal-backdrop">
+        <div class="admin-modal">
+            <div class="panel-header">
+                <div class="panel-title" id="projectModalTitle">➕ Add New Project</div>
+                <button class="btn btn-secondary btn-sm" onclick="closeProjectModal()">✕</button>
+            </div>
+            <form id="projectForm" class="form-grid">
+                <input type="hidden" id="projId">
+                <div class="form-group full-width">
+                    <label class="form-label">Project Title</label>
+                    <input type="text" id="projTitle" class="form-input" placeholder="e.g. Hidden Agenda — Real-Time Deduction Game" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <input type="text" id="projCategory" class="form-input" placeholder="e.g. Web Apps & Games" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tech Stack Tags (Comma Separated)</label>
+                    <input type="text" id="projTags" class="form-input" placeholder="e.g. Next.js, TypeScript, WebRTC, Tailwind" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Live Demo URL</label>
+                    <input type="text" id="projLive" class="form-input" placeholder="e.g. /projects/hidden-agenda/ or https://...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">GitHub Repository URL</label>
+                    <input type="text" id="projGithub" class="form-input" placeholder="e.g. https://github.com/skillsxsin/portfolio">
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Description Summary</label>
+                    <textarea id="projDesc" class="form-textarea" rows="4" placeholder="Detailed summary of the project architecture and features..." required></textarea>
+                </div>
+                <div class="form-group full-width" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeProjectModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================= -->
+    <!-- BLOG MODAL (ADD / EDIT) -->
+    <!-- ======================================================= -->
+    <div id="blogModal" class="admin-modal-backdrop">
+        <div class="admin-modal" style="max-width: 900px;">
+            <div class="panel-header">
+                <div class="panel-title" id="blogModalTitle">✍️ Write Blog Article</div>
+                <button class="btn btn-secondary btn-sm" onclick="closeBlogModal()">✕</button>
+            </div>
+            <form id="blogForm" class="form-grid">
+                <input type="hidden" id="blogOriginalSlug">
+                <div class="form-group full-width">
+                    <label class="form-label">Article Title</label>
+                    <input type="text" id="blogTitle" class="form-input" placeholder="e.g. Building Real-Time Multiplayer Games on the Edge" required oninput="autoGenerateSlug()">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">URL Slug</label>
+                    <input type="text" id="blogSlug" class="form-input" placeholder="building-real-time-games" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Year</label>
+                    <input type="text" id="blogYear" class="form-input" value="2026" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <input type="text" id="blogCategory" class="form-input" placeholder="e.g. Engineering & Architecture" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Publish Date</label>
+                    <input type="text" id="blogDate" class="form-input" value="Sep 10, 2026" required>
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Tags (Comma Separated)</label>
+                    <input type="text" id="blogTags" class="form-input" placeholder="e.g. WebSockets, WebRTC, Next.js, Cloudflare" required>
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Article Short Excerpt</label>
+                    <textarea id="blogDesc" class="form-textarea" rows="2" placeholder="Brief summary of the article..." required></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Article Content (HTML / Markdown)</label>
+                    <textarea id="blogContent" class="form-textarea" rows="10" placeholder="<p>Full article body with code blocks and paragraphs...</p>" required></textarea>
+                </div>
+                <div class="form-group full-width" style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeBlogModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Publish Article</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <script>
-        const formAddProject = document.getElementById('formAddProject');
-        const tableProjects = document.getElementById('tableProjects').querySelector('tbody');
-        const btnLogout = document.getElementById('btnLogout');
+        let currentDb = { projects: [], blogs: [], contacts: [], settings: {} };
 
-        // Submit Project
-        formAddProject.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            playLocalClick();
+        // ── Tab Management ──
+        document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        });
 
-            const newProj = {
-                title: document.getElementById('projTitle').value,
-                category: document.getElementById('projCategory').value,
-                tags: document.getElementById('projTags').value.split(',').map(t => t.trim()),
-                description: document.getElementById('projDesc').value,
-                links: {
-                    live: document.getElementById('projLive').value,
-                    github: document.getElementById('projGithub').value
+        function switchTab(tabId) {
+            document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => {
+                c.style.display = 'none';
+                c.classList.remove('active');
+            });
+
+            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+
+            const content = document.getElementById(tabId);
+            if (content) {
+                content.style.display = 'block';
+                content.classList.add('active');
+            }
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = (type === 'success' ? '✓ ' : '✕ ') + msg;
+            document.getElementById('toastContainer').appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        // ── Load Full Database ──
+        async function loadDatabase() {
+            try {
+                const res = await fetch('/api/db');
+                if (res.status === 401) {
+                    window.location.href = '/login?redirect=/admin';
+                    return;
                 }
+                const data = await res.json();
+                currentDb = data || { projects: [], blogs: [], contacts: [], settings: {} };
+                renderAll();
+                showToast('Database synchronized with Cloudflare KV');
+            } catch (err) {
+                showToast('Failed to load database: ' + err.message, 'error');
+            }
+        }
+
+        function renderAll() {
+            // Metrics
+            document.getElementById('metricProjectsCount').textContent = currentDb.projects ? currentDb.projects.length : 0;
+            document.getElementById('metricBlogsCount').textContent = currentDb.blogs ? currentDb.blogs.length : 0;
+            document.getElementById('metricContactsCount').textContent = currentDb.contacts ? currentDb.contacts.length : 0;
+            document.getElementById('badgeInboxCount').textContent = currentDb.contacts ? currentDb.contacts.length : 0;
+
+            // Render Tables
+            renderProjectsTable();
+            renderBlogsTable();
+            renderContactsTable();
+
+            // Raw JSON
+            document.getElementById('rawJsonEditor').value = JSON.stringify(currentDb, null, 2);
+        }
+
+        // ── Projects CRUD ──
+        function renderProjectsTable() {
+            const tbody = document.getElementById('projectsTableBody');
+            if (!currentDb.projects || currentDb.projects.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">No projects in catalog yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = currentDb.projects.map(p => `
+                <tr>
+                    <td><strong style="color: #ffffff;">${p.title}</strong></td>
+                    <td><span class="admin-badge">${p.category}</span></td>
+                    <td><span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #94a3b8;">${(p.tags || []).join(' • ')}</span></td>
+                    <td>
+                        ${p.links && p.links.live ? `<a href="${p.links.live}" target="_blank" style="color: var(--admin-accent); font-size: 0.75rem; margin-right: 8px;">Demo ↗</a>` : ''}
+                        ${p.links && p.links.github ? `<a href="${p.links.github}" target="_blank" style="color: #94a3b8; font-size: 0.75rem;">GitHub ↗</a>` : ''}
+                    </td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <button class="btn btn-secondary btn-sm" onclick="editProject('${p.id}')">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteProject('${p.id}')">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openProjectModal(editId = null) {
+            const modal = document.getElementById('projectModal');
+            const form = document.getElementById('projectForm');
+            form.reset();
+
+            if (editId) {
+                const p = currentDb.projects.find(x => x.id === editId);
+                if (p) {
+                    document.getElementById('projectModalTitle').textContent = '✏️ Edit Project';
+                    document.getElementById('projId').value = p.id;
+                    document.getElementById('projTitle').value = p.title || '';
+                    document.getElementById('projCategory').value = p.category || '';
+                    document.getElementById('projTags').value = (p.tags || []).join(', ');
+                    document.getElementById('projLive').value = (p.links && p.links.live) || '';
+                    document.getElementById('projGithub').value = (p.links && p.links.github) || '';
+                    document.getElementById('projDesc').value = p.description || '';
+                }
+            } else {
+                document.getElementById('projectModalTitle').textContent = '➕ Add New Project';
+                document.getElementById('projId').value = 'p_' + Date.now();
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('active');
+        }
+
+        function editProject(id) {
+            openProjectModal(id);
+        }
+
+        async function deleteProject(id) {
+            if (!confirm('Are you sure you want to delete this project?')) return;
+            try {
+                const res = await fetch(`/api/projects?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                if (res.ok) {
+                    currentDb.projects = currentDb.projects.filter(p => p.id !== id);
+                    renderAll();
+                    showToast('Project deleted successfully');
+                } else {
+                    showToast('Failed to delete project', 'error');
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        document.getElementById('projectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('projId').value;
+            const projectData = {
+                id,
+                title: document.getElementById('projTitle').value.trim(),
+                category: document.getElementById('projCategory').value.trim(),
+                tags: document.getElementById('projTags').value.split(',').map(t => t.trim()).filter(Boolean),
+                links: {
+                    live: document.getElementById('projLive').value.trim(),
+                    github: document.getElementById('projGithub').value.trim()
+                },
+                description: document.getElementById('projDesc').value.trim()
             };
 
             try {
                 const res = await fetch('/api/projects', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(newProj)
+                    body: JSON.stringify(projectData)
                 });
-                if (res.status === 401) {
-                    alert("Session expired. Redirecting to login.");
-                    window.location.href = '/login?redirect=/admin-projects';
-                    return;
+                if (res.ok) {
+                    const existingIndex = currentDb.projects.findIndex(p => p.id === id);
+                    if (existingIndex >= 0) currentDb.projects[existingIndex] = projectData;
+                    else currentDb.projects.unshift(projectData);
+                    closeProjectModal();
+                    renderAll();
+                    showToast('Project saved successfully');
+                } else {
+                    showToast('Error saving project', 'error');
                 }
-                if (!res.ok) throw new Error("Backend save failure");
-                
-                alert("Project published successfully!");
-                formAddProject.reset();
-                document.getElementById('projLive').value = "#";
-                syncDatabaseViews();
             } catch (err) {
-                alert(`Error saving project: ${err.message}`);
+                showToast(err.message, 'error');
             }
         });
 
-        // Delete Project
-        async function deleteProject(id) {
-            if (!confirm("Are you sure you want to delete this project?")) return;
-            playLocalClick();
-            
-            try {
-                const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
-                if (res.status === 401) {
-                    alert("Unauthorized. Redirecting to login.");
-                    window.location.href = '/login?redirect=/admin-projects';
-                    return;
-                }
-                if (!res.ok) throw new Error("Backend delete failure");
-                
-                alert("Project deleted successfully!");
-                syncDatabaseViews();
-            } catch (err) {
-                alert(`Delete error: ${err.message}`);
+        // ── Blogs CRUD ──
+        function renderBlogsTable() {
+            const tbody = document.getElementById('blogsTableBody');
+            if (!currentDb.blogs || currentDb.blogs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #64748b;">No blog articles published yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = currentDb.blogs.map(b => `
+                <tr>
+                    <td><strong style="color: #ffffff;">${b.title}</strong></td>
+                    <td><a href="/Blog/${b.year}/${b.slug}" target="_blank" style="color: var(--admin-accent); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">/Blog/${b.year}/${b.slug} ↗</a></td>
+                    <td><span class="admin-badge">${b.category}</span></td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #94a3b8;">${b.date}</td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <button class="btn btn-secondary btn-sm" onclick="editBlog('${b.slug}')">✏️ Edit</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteBlog('${b.slug}', '${b.year}')">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function autoGenerateSlug() {
+            const title = document.getElementById('blogTitle').value;
+            const originalSlug = document.getElementById('blogOriginalSlug').value;
+            if (!originalSlug) {
+                const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+                document.getElementById('blogSlug').value = slug;
             }
         }
 
-        // Logout
-        btnLogout.addEventListener('click', (e) => {
+        function openBlogModal(slug = null) {
+            const modal = document.getElementById('blogModal');
+            const form = document.getElementById('blogForm');
+            form.reset();
+
+            if (slug) {
+                const b = currentDb.blogs.find(x => x.slug === slug);
+                if (b) {
+                    document.getElementById('blogModalTitle').textContent = '✏️ Edit Article';
+                    document.getElementById('blogOriginalSlug').value = b.slug;
+                    document.getElementById('blogTitle').value = b.title || '';
+                    document.getElementById('blogSlug').value = b.slug || '';
+                    document.getElementById('blogYear').value = b.year || '2026';
+                    document.getElementById('blogCategory').value = b.category || '';
+                    document.getElementById('blogDate').value = b.date || '';
+                    document.getElementById('blogTags').value = (b.tags || []).join(', ');
+                    document.getElementById('blogDesc').value = b.description || '';
+                    document.getElementById('blogContent').value = b.content || '';
+                }
+            } else {
+                document.getElementById('blogModalTitle').textContent = '✍️ Write New Article';
+                document.getElementById('blogOriginalSlug').value = '';
+                document.getElementById('blogYear').value = new Date().getFullYear();
+                document.getElementById('blogDate').value = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeBlogModal() {
+            document.getElementById('blogModal').classList.remove('active');
+        }
+
+        function editBlog(slug) {
+            openBlogModal(slug);
+        }
+
+        async function deleteBlog(slug, year) {
+            if (!confirm(`Are you sure you want to delete article "${slug}"?`)) return;
+            try {
+                const res = await fetch(`/api/blogs?slug=${encodeURIComponent(slug)}&year=${encodeURIComponent(year)}`, { method: 'DELETE' });
+                if (res.ok) {
+                    currentDb.blogs = currentDb.blogs.filter(b => !(b.slug === slug && b.year === year));
+                    renderAll();
+                    showToast('Article deleted successfully');
+                } else {
+                    showToast('Failed to delete article', 'error');
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        document.getElementById('blogForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            playLocalClick();
-            // Expire cookie
-            document.cookie = "session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            const originalSlug = document.getElementById('blogOriginalSlug').value;
+            const blogData = {
+                title: document.getElementById('blogTitle').value.trim(),
+                slug: document.getElementById('blogSlug').value.trim(),
+                year: document.getElementById('blogYear').value.trim(),
+                category: document.getElementById('blogCategory').value.trim(),
+                date: document.getElementById('blogDate').value.trim(),
+                tags: document.getElementById('blogTags').value.split(',').map(t => t.trim()).filter(Boolean),
+                description: document.getElementById('blogDesc').value.trim(),
+                content: document.getElementById('blogContent').value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/blogs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(blogData)
+                });
+                if (res.ok) {
+                    if (originalSlug) {
+                        currentDb.blogs = currentDb.blogs.filter(b => b.slug !== originalSlug);
+                    }
+                    currentDb.blogs.unshift(blogData);
+                    closeBlogModal();
+                    renderAll();
+                    showToast('Article published successfully');
+                } else {
+                    showToast('Error publishing article', 'error');
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        });
+
+        // ── Contacts Inbox ──
+        function renderContactsTable() {
+            const tbody = document.getElementById('contactsTableBody');
+            if (!currentDb.contacts || currentDb.contacts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #64748b;">No transmission messages received yet.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = currentDb.contacts.map(c => `
+                <tr>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #94a3b8; white-space: nowrap;">${new Date(c.date).toLocaleString()}</td>
+                    <td><strong style="color: #ffffff;">${c.name}</strong></td>
+                    <td><a href="mailto:${c.email}?subject=Reply:%20Bhavya%20Jangid" style="color: var(--admin-accent); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">${c.email}</a></td>
+                    <td style="max-width: 320px; font-size: 0.8rem; color: #cbd5e1;">${c.message}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #64748b;">${c.ip || 'N/A'}</td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <a href="mailto:${c.email}?subject=Reply:%20Bhavya%20Jangid" class="btn btn-secondary btn-sm">✉️ Reply</a>
+                        <button class="btn btn-danger btn-sm" onclick="deleteContact('${c.id}')">🗑️</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function deleteContact(id) {
+            try {
+                const res = await fetch(`/api/contacts?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                if (res.ok) {
+                    currentDb.contacts = currentDb.contacts.filter(c => c.id !== id);
+                    renderAll();
+                    showToast('Message deleted');
+                } else {
+                    showToast('Failed to delete message', 'error');
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        async function clearAllContacts() {
+            if (!confirm('Are you sure you want to clear all messages from your inbox?')) return;
+            try {
+                const res = await fetch('/api/contacts?clearAll=true', { method: 'DELETE' });
+                if (res.ok) {
+                    currentDb.contacts = [];
+                    renderAll();
+                    showToast('Inbox cleared');
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ── Backup & Raw JSON ──
+        function downloadDbBackup() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentDb, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `bhavyajangid_backup_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            showToast('Backup JSON downloaded');
+        }
+
+        function importDbFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (!parsed.projects || !parsed.blogs) {
+                        throw new Error('Invalid database format: must contain projects and blogs array');
+                    }
+                    if (confirm('Are you sure you want to restore this database snapshot? It will replace the current data.')) {
+                        await uploadFullDatabase(parsed);
+                    }
+                } catch (err) {
+                    showToast('Invalid JSON file: ' + err.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        async function saveRawJson() {
+            try {
+                const parsed = JSON.parse(document.getElementById('rawJsonEditor').value);
+                if (confirm('Save modifications to Cloudflare KV?')) {
+                    await uploadFullDatabase(parsed);
+                }
+            } catch (err) {
+                showToast('JSON Syntax Error: ' + err.message, 'error');
+            }
+        }
+
+        async function uploadFullDatabase(dbData) {
+            try {
+                const res = await fetch('/api/db', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dbData)
+                });
+                if (res.ok) {
+                    currentDb = dbData;
+                    renderAll();
+                    showToast('Full database successfully written to Cloudflare KV');
+                } else {
+                    showToast('Failed to save database', 'error');
+                }
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        // ── Logout ──
+        document.getElementById('btnLogout').addEventListener('click', async () => {
+            await fetch('/api/logout', { method: 'POST' });
             window.location.href = '/login';
         });
 
-        // Sync Database list views
-        async function syncDatabaseViews() {
-            try {
-                const res = await fetch('/api/projects');
-                if (res.status === 401) {
-                    window.location.href = '/login?redirect=/admin-projects';
-                    return;
-                }
-                const projects = await res.json();
-                tableProjects.innerHTML = projects.length === 0 
-                    ? `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No projects in database.</td></tr>`
-                    : projects.map(p => `
-                        <tr>
-                            <td><strong>${p.title}</strong></td>
-                            <td>${p.category}</td>
-                            <td>${p.tags.join(', ')}</td>
-                            <td><button class="delete-btn" onclick="deleteProject('${p.id}')">Delete</button></td>
-                        </tr>
-                    `).join('');
-            } catch (err) {
-                console.error("Sync error:", err);
-            }
-        }
-
-        /* Local Mechanical click synth */
-        let localCtx = null;
-        function playLocalClick() {
-            try {
-                if (!localCtx) {
-                    localCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (localCtx.state === 'suspended') localCtx.resume();
-                const now = localCtx.currentTime;
-                
-                const bufferSize = localCtx.sampleRate * 0.01;
-                const buffer = localCtx.createBuffer(1, bufferSize, localCtx.sampleRate);
-                const data = buffer.getChannelData(0);
-                for (let i=0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
-                
-                const noise = localCtx.createBufferSource();
-                noise.buffer = buffer;
-                
-                const filter = localCtx.createBiquadFilter();
-                filter.type = 'bandpass';
-                filter.frequency.setValueAtTime(5500, now);
-                filter.Q.setValueAtTime(4, now);
-                
-                const gain = localCtx.createGain();
-                gain.gain.setValueAtTime(0.06, now);
-                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.008);
-                
-                noise.connect(filter);
-                filter.connect(gain);
-                gain.connect(localCtx.destination);
-                
-                const osc = localCtx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(180, now);
-                const oscGain = localCtx.createGain();
-                oscGain.gain.setValueAtTime(0.04, now);
-                oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
-                
-                osc.connect(oscGain);
-                oscGain.connect(localCtx.destination);
-                
-                noise.start(now);
-                osc.start(now);
-                osc.stop(now + 0.08);
-            } catch(e) {}
-        }
-
-        // Apply theme variables
-        function loadSavedTheme() {
-            const savedColor = localStorage.getItem('portfolio-custom-color');
-            if (savedColor) {
-                document.documentElement.style.setProperty('--accent-color', savedColor);
-                let hex = savedColor.replace('#', '');
-                if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-                const r = parseInt(hex.substring(0, 2), 16);
-                const g = parseInt(hex.substring(2, 4), 16);
-                const b = parseInt(hex.substring(4, 6), 16);
-                document.documentElement.style.setProperty('--accent-color-rgb', `${r}, ${g}, ${b}`);
-                document.documentElement.style.setProperty('--accent-glow', `0 0 12px rgba(${r}, ${g}, ${b}, 0.7), 0 0 30px rgba(${r}, ${g}, ${b}, 0.3)`);
-            }
-        }
-        loadSavedTheme();
-        syncDatabaseViews();
+        // Initialize on load
+        loadDatabase();
     </script>
 </body>
 </html>
