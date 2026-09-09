@@ -674,13 +674,8 @@ const server = http.createServer((req, res) => {
             res.end();
             return;
         }
-        if (cleanPath === '/admin' || cleanPath === '/admin.html' || cleanPath === '/admin-blogs.html') {
-            res.writeHead(301, { 'Location': '/admin-blogs' });
-            res.end();
-            return;
-        }
-        if (cleanPath === '/admin-projects.html') {
-            res.writeHead(301, { 'Location': '/admin-projects' });
+        if (cleanPath === '/admin-blogs' || cleanPath === '/admin-blogs.html' || cleanPath === '/admin-projects' || cleanPath === '/admin-projects.html') {
+            res.writeHead(301, { 'Location': '/admin' });
             res.end();
             return;
         }
@@ -741,36 +736,17 @@ const server = http.createServer((req, res) => {
             return;
         }
 
-        // Handle admin-blogs page with session gate
-        if (cleanPath === '/admin-blogs') {
+        // Handle Executive Admin Control Center with session gate
+        if (cleanPath === '/admin' || cleanPath === '/admin.html') {
             if (!isAuthorized(req)) {
-                res.writeHead(302, { 'Location': '/login?redirect=/admin-blogs' });
+                res.writeHead(302, { 'Location': '/login?redirect=/admin' });
                 res.end();
                 return;
             }
-            fs.readFile(path.join(PUBLIC_DIR, 'admin-blogs.html'), 'utf8', (err, html) => {
+            fs.readFile(path.join(PUBLIC_DIR, 'admin.html'), 'utf8', (err, html) => {
                 if (err) {
                     res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Error loading blogs dashboard');
-                    return;
-                }
-                res.writeHead(200, { 'Content-Type': 'text/html', 'X-Robots-Tag': 'noindex, nofollow' });
-                res.end(html);
-            });
-            return;
-        }
-
-        // Handle admin-projects page with session gate
-        if (cleanPath === '/admin-projects') {
-            if (!isAuthorized(req)) {
-                res.writeHead(302, { 'Location': '/login?redirect=/admin-projects' });
-                res.end();
-                return;
-            }
-            fs.readFile(path.join(PUBLIC_DIR, 'admin-projects.html'), 'utf8', (err, html) => {
-                if (err) {
-                    res.writeHead(500, { 'Content-Type': 'text/plain' });
-                    res.end('Error loading projects dashboard');
+                    res.end('Error loading admin control center');
                     return;
                 }
                 res.writeHead(200, { 'Content-Type': 'text/html', 'X-Robots-Tag': 'noindex, nofollow' });
@@ -1155,6 +1131,95 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    // POST /api/logout
+    if (pathname === '/api/logout' && method === 'POST') {
+        const sid = getCookie(req, SESSION_COOKIE_NAME);
+        if (sid) activeSessions.delete(sid);
+        res.writeHead(200, {
+            'Set-Cookie': `${SESSION_COOKIE_NAME}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict`,
+            'Content-Type': 'application/json'
+        });
+        res.end(JSON.stringify({ success: true }));
+        return;
+    }
+
+    // GET /api/db (Full Database snapshot for Admin)
+    if (pathname === '/api/db' && method === 'GET') {
+        if (!isAuthorized(req)) {
+            res.writeHead(401, { 'Content-Type': 'text/plain' });
+            res.end('Unauthorized');
+            return;
+        }
+        const db = readDatabase();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(db));
+        return;
+    }
+
+    // POST /api/db (Full Database restore/update)
+    if (pathname === '/api/db' && method === 'POST') {
+        if (!isAuthorized(req)) {
+            res.writeHead(401, { 'Content-Type': 'text/plain' });
+            res.end('Unauthorized');
+            return;
+        }
+        let body = '';
+        req.on('data', chunk => { body += chunk; });
+        req.on('end', () => {
+            try {
+                const newDb = JSON.parse(body);
+                if (!newDb || !Array.isArray(newDb.projects) || !Array.isArray(newDb.blogs)) {
+                    res.writeHead(400, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: false, error: 'Invalid database structure' }));
+                    return;
+                }
+                writeDatabase(newDb);
+                syncLlmProfileAndSitemapDebounced();
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, message: 'Database saved' }));
+            } catch (err) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: false, error: 'Malformed JSON' }));
+            }
+        });
+        return;
+    }
+
+    // GET /api/contacts (Admin only)
+    if (pathname === '/api/contacts' && method === 'GET') {
+        if (!isAuthorized(req)) {
+            res.writeHead(401, { 'Content-Type': 'text/plain' });
+            res.end('Unauthorized');
+            return;
+        }
+        const db = readDatabase();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(db.contacts || []));
+        return;
+    }
+
+    // DELETE /api/contacts (Admin only)
+    if (pathname === '/api/contacts' && method === 'DELETE') {
+        if (!isAuthorized(req)) {
+            res.writeHead(401, { 'Content-Type': 'text/plain' });
+            res.end('Unauthorized');
+            return;
+        }
+        const parsedUrl = url.parse(req.url, true);
+        const id = parsedUrl.query.id;
+        const clearAll = parsedUrl.query.clearAll;
+        const db = readDatabase();
+        if (clearAll === 'true') {
+            db.contacts = [];
+        } else if (id) {
+            db.contacts = (db.contacts || []).filter(c => c.id !== id);
+        }
+        writeDatabase(db);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true }));
+        return;
+    }
+
     // GET /api/projects
     if (pathname === '/api/projects' && method === 'GET') {
         const db = readDatabase();
@@ -1163,7 +1228,7 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // POST /api/projects (gate validation)
+    // POST /api/projects (Create or Update)
     if (pathname === '/api/projects' && method === 'POST') {
         if (!isAuthorized(req)) {
             res.writeHead(401, { 'Content-Type': 'text/plain' });
@@ -1176,8 +1241,13 @@ const server = http.createServer((req, res) => {
             try {
                 const db = readDatabase();
                 const newProj = JSON.parse(body);
-                newProj.id = 'p_' + Date.now();
-                db.projects.push(newProj);
+                const existingIdx = db.projects.findIndex(p => p.id === newProj.id);
+                if (existingIdx >= 0) {
+                    db.projects[existingIdx] = newProj;
+                } else {
+                    if (!newProj.id) newProj.id = 'p_' + Date.now();
+                    db.projects.unshift(newProj);
+                }
                 writeDatabase(db);
                 syncLlmProfileAndSitemapDebounced();
                 res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1190,15 +1260,15 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // DELETE /api/projects/:id (gate validation)
-    const projDeleteMatch = pathname.match(/^\/api\/projects\/([a-zA-Z0-9_-]+)$/);
-    if (projDeleteMatch && method === 'DELETE') {
+    // DELETE /api/projects
+    if ((pathname === '/api/projects' || pathname.startsWith('/api/projects/')) && method === 'DELETE') {
         if (!isAuthorized(req)) {
             res.writeHead(401, { 'Content-Type': 'text/plain' });
             res.end('Unauthorized');
             return;
         }
-        const id = projDeleteMatch[1];
+        const parsedUrl = url.parse(req.url, true);
+        const id = parsedUrl.query.id || pathname.replace('/api/projects/', '');
         const db = readDatabase();
         const idx = db.projects.findIndex(p => p.id === id);
         if (idx !== -1) {
@@ -1222,7 +1292,7 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // POST /api/blogs (gate validation)
+    // POST /api/blogs (Create or Update)
     if (pathname === '/api/blogs' && method === 'POST') {
         if (!isAuthorized(req)) {
             res.writeHead(401, { 'Content-Type': 'text/plain' });
@@ -1235,9 +1305,14 @@ const server = http.createServer((req, res) => {
             try {
                 const db = readDatabase();
                 const newBlog = JSON.parse(body);
-                newBlog.id = 'b_' + Date.now();
-                newBlog.date = new Date().toISOString().split('T')[0];
-                db.blogs.push(newBlog);
+                const existingIdx = db.blogs.findIndex(b => b.slug === newBlog.slug);
+                if (existingIdx >= 0) {
+                    db.blogs[existingIdx] = { ...db.blogs[existingIdx], ...newBlog };
+                } else {
+                    if (!newBlog.id) newBlog.id = 'b_' + Date.now();
+                    if (!newBlog.date) newBlog.date = new Date().toISOString().split('T')[0];
+                    db.blogs.unshift(newBlog);
+                }
                 writeDatabase(db);
                 syncLlmProfileAndSitemapDebounced();
                 res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -1250,17 +1325,18 @@ const server = http.createServer((req, res) => {
         return;
     }
 
-    // DELETE /api/blogs/:id (gate validation)
-    const blogDeleteMatch = pathname.match(/^\/api\/blogs\/([a-zA-Z0-9_-]+)$/);
-    if (blogDeleteMatch && method === 'DELETE') {
+    // DELETE /api/blogs
+    if ((pathname === '/api/blogs' || pathname.startsWith('/api/blogs/')) && method === 'DELETE') {
         if (!isAuthorized(req)) {
             res.writeHead(401, { 'Content-Type': 'text/plain' });
             res.end('Unauthorized');
             return;
         }
-        const id = blogDeleteMatch[1];
+        const parsedUrl = url.parse(req.url, true);
+        const slug = parsedUrl.query.slug || pathname.replace('/api/blogs/', '');
+        const year = parsedUrl.query.year;
         const db = readDatabase();
-        const idx = db.blogs.findIndex(b => b.id === id);
+        const idx = db.blogs.findIndex(b => b.slug === slug && (!year || b.year === year));
         if (idx !== -1) {
             db.blogs.splice(idx, 1);
             writeDatabase(db);

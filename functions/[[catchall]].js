@@ -561,11 +561,14 @@ export async function onRequest(context) {
         if (cleanPath === '/login.html' || pathname === '/login/') {
             return Response.redirect(new URL('/login', url).toString(), 301);
         }
-        if (cleanPath === '/admin' || cleanPath === '/admin.html' || cleanPath === '/admin/' || cleanPath === '/admin-blogs.html') {
-            return Response.redirect(new URL('/admin-blogs', url).toString(), 301);
+        if (cleanPath === '/admin-blogs.html') {
+            return Response.redirect(new URL('/admin', url).toString(), 301);
         }
         if (cleanPath === '/admin-projects.html') {
-            return Response.redirect(new URL('/admin-projects', url).toString(), 301);
+            return Response.redirect(new URL('/admin', url).toString(), 301);
+        }
+        if (cleanPath === '/admin-blogs' || cleanPath === '/admin-projects') {
+            return Response.redirect(new URL('/admin', url).toString(), 301);
         }
 
         // ── Static HTML clean URL routes (Canonical 200 OK) ──
@@ -585,23 +588,13 @@ export async function onRequest(context) {
             return new Response(html, { headers });
         }
 
-        // ── Admin-blogs (session gated) ──
-        if (cleanPath === '/admin-blogs') {
+        // ── Executive Admin Control Center (session gated) ──
+        if (cleanPath === '/admin' || cleanPath === '/admin.html') {
             if (!(await isAuthorized(request, env))) {
-                return Response.redirect(new URL('/login?redirect=/admin-blogs', url).toString(), 302);
+                return Response.redirect(new URL('/login?redirect=/admin', url).toString(), 302);
             }
-            const html = await fetchAssetText(env, request, '/admin-blogs.html');
-            if (!html) return textResponse('Error loading dashboard', 500);
-            return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex, nofollow' } });
-        }
-
-        // ── Admin-projects (session gated) ──
-        if (cleanPath === '/admin-projects') {
-            if (!(await isAuthorized(request, env))) {
-                return Response.redirect(new URL('/login?redirect=/admin-projects', url).toString(), 302);
-            }
-            const html = await fetchAssetText(env, request, '/admin-projects.html');
-            if (!html) return textResponse('Error loading dashboard', 500);
+            const html = await fetchAssetText(env, request, '/admin.html');
+            if (!html) return textResponse('Error loading admin control center', 500);
             return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Robots-Tag': 'noindex, nofollow' } });
         }
 
@@ -778,6 +771,24 @@ export async function onRequest(context) {
             return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
         }
 
+        // ── /api/db (Full Database snapshot for Admin) ──
+        if (cleanPath === '/api/db') {
+            if (!(await isAuthorized(request, env))) {
+                return textResponse('Unauthorized', 401);
+            }
+            const db = await readDatabase(env);
+            return jsonResponse(db, 200, corsHeaders(cleanPath));
+        }
+
+        // ── /api/contacts (Admin only) ──
+        if (cleanPath === '/api/contacts') {
+            if (!(await isAuthorized(request, env))) {
+                return textResponse('Unauthorized', 401);
+            }
+            const db = await readDatabase(env);
+            return jsonResponse(db.contacts || [], 200, corsHeaders(cleanPath));
+        }
+
         // ── /api/projects ──
         if (cleanPath === '/api/projects') {
             const db = await readDatabase(env);
@@ -800,6 +811,21 @@ export async function onRequest(context) {
     // ── POST routes ────────────────────────────────────────
 
     if (method === 'POST') {
+
+        // ── POST /api/logout ──
+        if (cleanPath === '/api/logout') {
+            const sid = getCookie(request, SESSION_COOKIE_NAME);
+            if (sid && env.KV) {
+                await env.KV.delete(`session:${sid}`);
+            }
+            return new Response(JSON.stringify({ success: true }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Set-Cookie': `${SESSION_COOKIE_NAME}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Strict`,
+                },
+            });
+        }
 
         // ── POST /api/login ──
         if (cleanPath === '/api/login') {
@@ -846,12 +872,29 @@ export async function onRequest(context) {
             }
         }
 
+        // ── POST /api/db (Full Database Restore/Sync) ──
+        if (cleanPath === '/api/db') {
+            if (!(await isAuthorized(request, env))) {
+                return textResponse('Unauthorized', 401);
+            }
+            let payload;
+            try {
+                payload = await request.json();
+            } catch {
+                return jsonResponse({ success: false, error: 'Malformed JSON' }, 400);
+            }
+            if (!payload || !Array.isArray(payload.projects) || !Array.isArray(payload.blogs)) {
+                return jsonResponse({ success: false, error: 'Invalid database structure' }, 400);
+            }
+            await writeDatabase(env, payload);
+            return jsonResponse({ success: true, message: 'Database saved to Cloudflare KV' });
+        }
+
         // ── POST /api/contact ──
         if (cleanPath === '/api/contact') {
             const ip = getClientIp(request);
             const lastTs = await getContactCooldown(env, ip);
             if (lastTs > 0) {
-                // KV key still exists → within cooldown window
                 const elapsed = Math.floor(Date.now() / 1000) - lastTs;
                 const waitSeconds = Math.max(0, CONTACT_COOLDOWN_SECONDS - elapsed);
                 return jsonResponse({
@@ -893,7 +936,7 @@ export async function onRequest(context) {
             return jsonResponse({ success: true, message: 'Signal transmitted successfully.' });
         }
 
-        // ── POST /api/projects ──
+        // ── POST /api/projects (Create or Update) ──
         if (cleanPath === '/api/projects') {
             if (!(await isAuthorized(request, env))) {
                 return textResponse('Unauthorized', 401);
@@ -905,13 +948,18 @@ export async function onRequest(context) {
                 return textResponse('Bad Request Data', 400);
             }
             const db = await readDatabase(env);
-            newProj.id = 'p_' + Date.now();
-            db.projects.push(newProj);
+            const existingIdx = db.projects.findIndex(p => p.id === newProj.id);
+            if (existingIdx >= 0) {
+                db.projects[existingIdx] = newProj;
+            } else {
+                if (!newProj.id) newProj.id = 'p_' + Date.now();
+                db.projects.unshift(newProj);
+            }
             await writeDatabase(env, db);
             return jsonResponse({ success: true, project: newProj });
         }
 
-        // ── POST /api/blogs ──
+        // ── POST /api/blogs (Create or Update) ──
         if (cleanPath === '/api/blogs') {
             if (!(await isAuthorized(request, env))) {
                 return textResponse('Unauthorized', 401);
@@ -923,9 +971,14 @@ export async function onRequest(context) {
                 return textResponse('Bad Request Data', 400);
             }
             const db = await readDatabase(env);
-            newBlog.id = 'b_' + Date.now();
-            newBlog.date = new Date().toISOString().split('T')[0];
-            db.blogs.push(newBlog);
+            const existingIdx = db.blogs.findIndex(b => b.slug === newBlog.slug);
+            if (existingIdx >= 0) {
+                db.blogs[existingIdx] = { ...db.blogs[existingIdx], ...newBlog };
+            } else {
+                if (!newBlog.id) newBlog.id = 'b_' + Date.now();
+                if (!newBlog.date) newBlog.date = new Date().toISOString().split('T')[0];
+                db.blogs.unshift(newBlog);
+            }
             await writeDatabase(env, db);
             return jsonResponse({ success: true, blog: newBlog });
         }
@@ -934,10 +987,25 @@ export async function onRequest(context) {
     // ── DELETE routes ──────────────────────────────────────
 
     if (method === 'DELETE') {
-        const projDeleteMatch = pathname.match(/^\/api\/projects\/([a-zA-Z0-9_\-]+)$/);
-        if (projDeleteMatch) {
-            if (!(await isAuthorized(request, env))) return textResponse('Unauthorized', 401);
-            const id = projDeleteMatch[1];
+        if (!(await isAuthorized(request, env))) return textResponse('Unauthorized', 401);
+
+        // ── DELETE /api/contacts ──
+        if (cleanPath === '/api/contacts') {
+            const id = url.searchParams.get('id');
+            const clearAll = url.searchParams.get('clearAll');
+            const db = await readDatabase(env);
+            if (clearAll === 'true') {
+                db.contacts = [];
+            } else if (id) {
+                db.contacts = db.contacts.filter(c => c.id !== id);
+            }
+            await writeDatabase(env, db);
+            return jsonResponse({ success: true });
+        }
+
+        // ── DELETE /api/projects ──
+        if (cleanPath === '/api/projects' || cleanPath.startsWith('/api/projects/')) {
+            const id = url.searchParams.get('id') || pathname.replace('/api/projects/', '');
             const db = await readDatabase(env);
             const idx = db.projects.findIndex(p => p.id === id);
             if (idx === -1) return textResponse('Project Not Found', 404);
@@ -946,12 +1014,12 @@ export async function onRequest(context) {
             return jsonResponse({ success: true });
         }
 
-        const blogDeleteMatch = pathname.match(/^\/api\/blogs\/([a-zA-Z0-9_\-]+)$/);
-        if (blogDeleteMatch) {
-            if (!(await isAuthorized(request, env))) return textResponse('Unauthorized', 401);
-            const id = blogDeleteMatch[1];
+        // ── DELETE /api/blogs ──
+        if (cleanPath === '/api/blogs' || cleanPath.startsWith('/api/blogs/')) {
+            const slug = url.searchParams.get('slug') || pathname.replace('/api/blogs/', '');
+            const year = url.searchParams.get('year');
             const db = await readDatabase(env);
-            const idx = db.blogs.findIndex(b => b.id === id);
+            const idx = db.blogs.findIndex(b => b.slug === slug && (!year || b.year === year));
             if (idx === -1) return textResponse('Blog Not Found', 404);
             db.blogs.splice(idx, 1);
             await writeDatabase(env, db);
