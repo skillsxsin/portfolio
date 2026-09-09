@@ -1,0 +1,7 @@
+name = "bhavyajangid"
+compatibility_date = "2024-09-23"
+pages_build_output_dir = "."
+
+[[kv_namespaces]]
+binding = "KV"
+id = "80abe2b36aec40d79e224fccea70e0e8"

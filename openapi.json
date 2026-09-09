@@ -1,0 +1,147 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Bhavya Jangid's Portfolio API",
+    "version": "1.0.0",
+    "description": "API endpoints for accessing engineering projects, blogs, and submitting contact messages."
+  },
+  "servers": [
+    {
+      "url": "https://bhavyajangid.com"
+    }
+  ],
+  "paths": {
+    "/api/projects": {
+      "get": {
+        "summary": "Get all projects",
+        "description": "Returns a list of all engineering projects built by Bhavya Jangid.",
+        "responses": {
+          "200": {
+            "description": "A list of engineering projects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "title": { "type": "string" },
+                      "category": { "type": "string" },
+                      "tags": { "type": "array", "items": { "type": "string" } },
+                      "links": {
+                        "type": "object",
+                        "properties": {
+                          "live": { "type": "string" },
+                          "github": { "type": "string" }
+                        }
+                      },
+                      "description": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/blogs": {
+      "get": {
+        "summary": "Get all blogs",
+        "description": "Returns a list of all engineering logs and blogs by Bhavya Jangid.",
+        "responses": {
+          "200": {
+            "description": "A list of blog posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string" },
+                      "title": { "type": "string" },
+                      "category": { "type": "string" },
+                      "tags": { "type": "array", "items": { "type": "string" } },
+                      "date": { "type": "string" },
+                      "year": { "type": "string" },
+                      "slug": { "type": "string" },
+                      "description": { "type": "string" },
+                      "content": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact": {
+      "post": {
+        "summary": "Submit a contact message",
+        "description": "Submits an inquiry/contact request. There is an IP-based rate limit of 1 message per 60 seconds.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "message"],
+                "properties": {
+                  "name": { "type": "string", "maxLength": 100 },
+                  "email": { "type": "string", "maxLength": 100 },
+                  "message": { "type": "string", "maxLength": 5000 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "message": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed json or missing fields"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "summary": "API Status Health Check",
+        "description": "Returns status ok if the API and system are functioning.",
+        "responses": {
+          "200": {
+            "description": "Status ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

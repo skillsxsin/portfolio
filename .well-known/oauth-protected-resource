@@ -1,0 +1,13 @@
+{
+  "resource": "https://bhavyajangid.com",
+  "authorization_servers": [
+    "https://bhavyajangid.com"
+  ],
+  "scopes_supported": [
+    "read",
+    "write"
+  ],
+  "bearer_methods_supported": [
+    "header"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "kid": "bhavya-mock-key-id-2026",
+      "use": "sig",
+      "alg": "RS256",
+      "n": "oM293M2M1OTIyMGYyOTM4NGU4ZjkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZTkyMzg0ZQ",
+      "e": "AQAB"
+    }
+  ]
+}

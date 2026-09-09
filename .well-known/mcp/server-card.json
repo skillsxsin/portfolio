@@ -1,0 +1,12 @@
+{
+  "serverInfo": {
+    "name": "Bhavya Jangid's Portfolio MCP Server",
+    "version": "1.0.0"
+  },
+  "endpoint": "https://bhavyajangid.com/mcp",
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": false
+  }
+}

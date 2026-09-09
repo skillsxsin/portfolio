@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "bhavya-portfolio-api",
+      "type": "skill-md",
+      "description": "Enables agents to retrieve engineering projects and logs, and send rate-limited contact inquiries.",
+      "url": "https://bhavyajangid.com/.well-known/agent-skills/bhavya-portfolio-api/SKILL.md",
+      "digest": "sha256:682e81b36c9b63fe7e721cd213fa7da5f745e007a9663113e2d9af3ae94fdbfe"
+    }
+  ]
+}

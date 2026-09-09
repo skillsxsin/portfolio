@@ -1,0 +1,14 @@
+# Cloudflare Pages 301 Canonical Redirects
+/index.html         /                  301
+/index              /                  301
+/about.html         /about             301
+/projects.html      /projects          301
+/blogs.html         /blogs             301
+/contact.html       /contact           301
+/login.html         /login             301
+/admin              /admin-blogs       301
+/admin.html         /admin-blogs       301
+/about/             /about             301
+/projects/          /projects          301
+/blogs/             /blogs             301
+/contact/           /contact           301

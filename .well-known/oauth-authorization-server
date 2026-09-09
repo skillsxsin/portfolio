@@ -1,0 +1,37 @@
+{
+  "issuer": "https://bhavyajangid.com",
+  "authorization_endpoint": "https://bhavyajangid.com/oauth/authorize",
+  "token_endpoint": "https://bhavyajangid.com/api/token",
+  "jwks_uri": "https://bhavyajangid.com/.well-known/jwks.json",
+  "grant_types_supported": [
+    "authorization_code",
+    "client_credentials"
+  ],
+  "response_types_supported": [
+    "code"
+  ],
+  "agent_auth": {
+    "skill": "https://isitagentready.com/.well-known/agent-skills/auth-md/SKILL.md",
+    "register_uri": "https://bhavyajangid.com/agent/auth",
+    "claim_uri": "https://bhavyajangid.com/agent/auth/claim",
+    "identity_types_supported": [
+      "anonymous",
+      "identity_assertion"
+    ],
+    "anonymous": {
+      "credential_types_supported": [
+        "api_key"
+      ]
+    },
+    "identity_assertion": {
+      "assertion_types_supported": [
+        "urn:ietf:params:oauth:token-type:id-jag",
+        "verified_email"
+      ],
+      "credential_types_supported": [
+        "access_token",
+        "api_key"
+      ]
+    }
+  }
+}

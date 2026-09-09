@@ -1,0 +1,16 @@
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+
+/admin-blogs*
+  X-Robots-Tag: noindex, nofollow
+
+/admin-projects*
+  X-Robots-Tag: noindex, nofollow
+
+/login*
+  X-Robots-Tag: noindex, nofollow
+
+/api/*
+  X-Robots-Tag: noindex, nofollow

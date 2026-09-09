@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bhavya Jangid's Portfolio</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description"
+        content="Bhavya Jangid's interactive side-scrolling portfolio modeled after 8-bit platformers. Features custom sprites, retro styling, Web Audio API synthesis, and full-stack projects.">
+    <meta property="og:title" content="Bhavya Jangid's Portfolio">
+    <meta property="og:description"
+        content="Interactive 8-bit side-scrolling portfolio showcasing full-stack capabilities, custom Web Audio synthesis, and design variable grids.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bhavyajangid.com/">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="canonical" href="https://bhavyajangid.com/">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+
+    <!-- LLM Discoverability Headers -->
+    <link rel="llm-profile" type="text/markdown" href="/llm-profile.md">
+    <link rel="llms-txt" type="text/markdown" href="/llms.txt">
+
+    <!-- Favicon link -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.0.2">
+</head>
+
+<body class="theme-custom">
+    <!-- Pixel Art Beach Background layers -->
+    <div class="parallax-bg sky-layer"></div>
+    <div class="parallax-bg sea-layer"></div>
+    <div class="parallax-bg sand-layer"></div>
+
+    <!-- Main Viewport Layout -->
+    <div class="app-container">
+
+        <!-- Top Header Area -->
+        <header class="top-nav-bar">
+            <div class="header-left">
+                <a href="/" class="header-home-link" style="text-decoration: none;"><h1 class="portfolio-title">Bhavya Jangid's Portfolio</h1></a>
+                <div class="sound-toggle-btn" id="soundToggle" title="Toggle Sound Synth">
+                    <span class="sound-icon">🔈</span> <span class="sound-state-lbl">Sound Off</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="settings-circle-btn" id="btnSettings" title="Open Configuration Panel">⚙</button>
+            </div>
+        </header>
+
+        <!-- Centered Active Content Card Area -->
+        <main class="content-board-viewport">
+            <div class="content-card-box" id="mainContentCard">
+                <!-- Corner Neon Brackets -->
+                <div class="card-bracket top-left"></div>
+                <div class="card-bracket top-right"></div>
+                <div class="card-bracket bottom-left"></div>
+                <div class="card-bracket bottom-right"></div>
+
+                <!-- Card Content: About -->
+                <div class="card-section active" id="card-about">
+                    <div class="card-section-header">ABOUT</div>
+                    <div class="card-section-body">
+                        <h2>Hello, I'm Bhavya</h2>
+                        <p class="section-intro">
+                            Simply a curious person who loves learning how things work and finding better ways to solve
+                            problems. Technology happens to be the playground where I get to do that every day.
+                        </p>
+                        <p class="section-intro" style="margin-top: 10px;">
+                            Professionally, I work as a Product Analyst at Gartner. I spend my time turning complex
+                            information into meaningful insights, uncovering opportunities that might otherwise go
+                            unnoticed.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card Content: Projects -->
+                <div class="card-section" id="card-projects">
+                    <div class="card-section-header">PROJECTS</div>
+                    <div class="card-section-body">
+                        <h2>My Engineering Projects</h2>
+                        <div class="project-preview-row">
+                            <div class="preview-item">
+                                <h3>● Integration and Node Backend</h3>
+                                <p>Backend systems gluing everything together with pre-rendering and clean routing.</p>
+                            </div>
+                            <div class="preview-item">
+                                <h3>● Web Audio Synthesizer</h3>
+                                <p>Programmatic sound engine synthesizing mechanical clicks and slow LFO waves.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Content: Blogs -->
+                <div class="card-section" id="card-blogs">
+                    <div class="card-section-header">BLOG POSTS</div>
+                    <div class="card-section-body">
+                        <h2>Latest Engineering Logs</h2>
+                        <p class="details-text"
+                            style="color: var(--text-muted); font-style: italic; font-size: 0.9rem; margin-top: 1rem;">
+                            Coming up with lot's of human written thoughts soon.</p>
+                    </div>
+                </div>
+
+                <!-- Card Content: Contact -->
+                <div class="card-section" id="card-contact">
+                    <div class="card-bracket top-left"></div>
+                    <div class="card-bracket top-right"></div>
+                    <div class="card-bracket bottom-left"></div>
+                    <div class="card-bracket bottom-right"></div>
+                    <div class="card-section-header">GET IN TOUCH</div>
+                    <div class="card-section-body">
+                        <h2>Signal Coordinates</h2>
+                        <p class="section-intro">Drop me a message to start working together. Reach out directly via my
+                            social links below.</p>
+                        <div class="contact-links-list"
+                            style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.6rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span
+                                    style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-color); text-shadow: var(--accent-glow);">EMAIL:</span>
+                                <a href="mailto:jangidbhavya99@gmail.com" class="project-link-btn"
+                                    onclick="playMechanicalClick();"
+                                    style="font-size: 0.8rem; padding: 4px 10px;">jangidbhavya99@gmail.com ✉</a>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span
+                                    style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-color); text-shadow: var(--accent-glow);">LINKEDIN:</span>
+                                <a href="https://www.linkedin.com/in/bhavya-jangid/" target="_blank"
+                                    class="project-link-btn" onclick="playMechanicalClick();"
+                                    style="font-size: 0.8rem; padding: 4px 10px;">linkedin.com/in/bhavya-jangid 🔗</a>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span
+                                     style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-color); text-shadow: var(--accent-glow);">GITHUB:</span>
+                                 <a href="https://github.com/skillsxsin" target="_blank"
+                                     class="project-link-btn" onclick="playMechanicalClick();"
+                                     style="font-size: 0.8rem; padding: 4px 10px;">github.com/skillsxsin 📁</a>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span
+                                    style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--accent-color); text-shadow: var(--accent-glow);">WHATSAPP:</span>
+                                <a href="https://wa.me/918955136723" target="_blank" class="project-link-btn"
+                                    onclick="playMechanicalClick();"
+                                    style="font-size: 0.8rem; padding: 4px 10px;">+91 8955136723 💬</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unified Read More Button -->
+                <div class="card-footer-action">
+                    <a href="/about" class="read-more-btn" id="btnReadMore">READ MORE ➔</a>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Controls & Walk Track Area -->
+        <footer class="bottom-hud-control-deck">
+
+            <!-- Walk Track containing Navigation Tabs and Sprite -->
+            <div class="nav-tray-wrapper">
+
+                <!-- Character Track where avatar slides -->
+                <div class="avatar-walk-track" id="avatarTrack">
+                    <!-- The Avatar sprite (DOM caching preloads all five poses) -->
+                    <div class="sprite-wrapper pose-standing" id="spriteWrapper">
+                        <img class="sprite-img standing" src="standing.png" alt="Standing">
+                        <img class="sprite-img right-strafe" src="right-strafe.png" alt="Right Strafe">
+                        <img class="sprite-img right-move" src="right-move.png" alt="Right Move">
+                        <img class="sprite-img left-strafe" src="left-strafe.png" alt="Left Strafe">
+                        <img class="sprite-img left-move" src="left-move.png" alt="Left Move">
+                        <div class="character-shadow"></div>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs underneath Avatar (crawlable anchor tags) -->
+                <div class="nav-tabs-tray" id="tabsTray">
+                    <a href="/about" class="nav-tab active" data-index="0">About</a>
+                    <a href="/projects" class="nav-tab" data-index="1">Projects</a>
+                    <a href="/blogs" class="nav-tab" data-index="2">Blogs</a>
+                    <a href="/contact" class="nav-tab" data-index="3">Contact</a>
+                </div>
+            </div>
+
+            <!-- Mechanical Keyboard Arrows on the Right -->
+            <div class="mechanical-arrows-hud">
+                <div class="keyboard-row">
+                    <!-- Left Button (A / ◀) -->
+                    <div class="mech-keycap beige-key" id="keyLeft" title="Move Left (A / Left Arrow)">
+                        <div class="keycap-top">
+                            <span class="primary-legend">◀</span>
+                            <span class="sub-legend">A</span>
+                        </div>
+                    </div>
+
+                    <!-- Right Button (D / ▶) -->
+                    <div class="mech-keycap beige-key" id="keyRight" title="Move Right (D / Right Arrow)">
+                        <div class="keycap-top">
+                            <span class="primary-legend">▶</span>
+                            <span class="sub-legend">D</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </footer>
+    </div>
+
+    <!-- Slide-out Settings Sidebar -->
+    <div class="settings-sidebar" id="settingsSidebar">
+        <div class="sidebar-header">
+            <h3>CONFIGURATION</h3>
+            <button class="close-btn" id="btnCloseSettings">&times;</button>
+        </div>
+        <div class="sidebar-content">
+            <!-- Custom Theme Color Picker -->
+            <div class="setting-group">
+                <label for="inputColorTheme">UI Highlight Accent Color</label>
+                <div class="color-picker-container">
+                    <input type="color" id="inputColorTheme" value="#ffcc00">
+                    <span class="color-hex-lbl" id="lblColorHex">#ffcc00</span>
+                </div>
+            </div>
+
+            <!-- Size Control -->
+            <div class="setting-group">
+                <label for="sliderSize">Avatar Scale (% Track)</label>
+                <div class="slider-container">
+                    <input type="range" id="sliderSize" min="10" max="30" value="20" step="1">
+                    <span class="slider-val" id="valSize">20%</span>
+                </div>
+            </div>
+
+            <!-- Step Size Control -->
+            <div class="setting-group">
+                <label for="sliderStep">Walking Step Speed</label>
+                <div class="slider-container">
+                    <input type="range" id="sliderStep" min="5" max="30" value="12" step="1">
+                    <span class="slider-val" id="valStep">12px</span>
+                </div>
+            </div>
+
+            <!-- Volume Wave Sound Control -->
+            <div class="setting-group">
+                <label for="sliderWaveVolume">Ambient Waves Volume</label>
+                <div class="slider-container">
+                    <input type="range" id="sliderWaveVolume" min="0" max="100" value="0" step="5">
+                    <span class="slider-val" id="valWaveVolume">0%</span>
+                </div>
+            </div>
+
+            <!-- Volume Click Sound Control -->
+            <div class="setting-group">
+                <label for="sliderVolume">Keyboard Click Volume</label>
+                <div class="slider-container">
+                    <input type="range" id="sliderVolume" min="0" max="100" value="40" step="5">
+                    <span class="slider-val" id="valVolume">40%</span>
+                </div>
+            </div>
+
+            <!-- Info Box about Web Dev Project -->
+            <div class="info-box web-dev-meta">
+                <h4>Project Metadata</h4>
+                <p class="meta-desc">
+                    This interactive retro portfolio uses hardware-accelerated CSS 3D transforms for controls,
+                    customized key-repeat physics loops, and real-time noise wave filters programmatically
+                    sweep-oscillated via the browser Web Audio API.
+                </p>
+                <p class="meta-desc" style="margin-top: 6px;">
+                    Target build is fully vanilla (HTML5 / ES6 Javascript / CSS variables) to run at 60 FPS without
+                    external UI packages.
+                </p>
+            </div>
+
+            <!-- Statistics logs -->
+            <div class="info-box stats-box">
+                <h4>System Logs</h4>
+                <div
+                    style="font-family: var(--font-mono); font-size: 0.7rem; display: flex; flex-direction: column; gap: 4px;">
+                    <div>AVATAR X: <span id="debugX" class="highlight-val">0px</span></div>
+                    <div>ACTIVE STATE: <span id="debugState" class="highlight-val">STANDING</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="settings-overlay" id="settingsOverlay"></div>
+
+    <!-- Application Script -->
+    <script src="app.js?v=1.0.2"></script>
+</body>
+
+</html>

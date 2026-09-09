@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects CMS Panel - Bhavya Jangid</title>
+    <meta name="robots" content="noindex, nofollow">
+    <!-- Favicon link -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.0.2">
+    <style>
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .db-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(10, 14, 25, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        .db-table th, .db-table td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .db-table th {
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--accent-color);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .db-table tr:hover {
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .delete-btn {
+            background: rgba(255, 95, 86, 0.15);
+            border: 1px solid #ff5f56;
+            color: #ff8e88;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            transition: all 0.2s ease;
+        }
+        .delete-btn:hover {
+            background: #ff5f56;
+            color: #05070c;
+            box-shadow: 0 0 10px rgba(255, 95, 86, 0.3);
+        }
+    </style>
+</head>
+<body class="theme-custom details-page-body">
+    <!-- Fixed Beach background container -->
+    <div class="fixed-beach-bg"></div>
+
+    <div class="details-layout-wrapper" style="max-width: 1100px;">
+        
+        <!-- Sticky Navigation Header -->
+        <header class="details-header">
+            <a href="/" class="details-logo-area">
+                ➔ BACK TO HOME
+            </a>
+            <nav class="details-nav-links">
+                <a href="/admin-blogs" class="details-nav-item">BLOG CMS</a>
+                <a href="/admin-projects" class="details-nav-item active">PROJECT CMS</a>
+                <a href="#" id="btnLogout" class="details-nav-item" style="color: #ff5f56;">LOGOUT</a>
+            </nav>
+        </header>
+
+        <!-- Route Banner -->
+        <div class="breadcrumb-banner">
+            <span class="path-root">System</span> / <span class="path-node">CMS_Projects_Console.sh</span>
+        </div>
+
+        <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem; text-shadow: 0 4px 10px rgba(0,0,0,0.5);">Engine Projects CMS Console</h2>
+        <p class="details-text" style="margin-bottom: 2rem;">Manage the projects and engineering products catalog shown on the portfolio.</p>
+
+        <div class="admin-grid">
+            
+            <!-- Project Creator Form -->
+            <section class="details-card-section" style="margin-bottom: 0;">
+                <div class="card-bracket top-left"></div>
+                <div class="card-bracket top-right"></div>
+                <div class="card-bracket bottom-left"></div>
+                <div class="card-bracket bottom-right"></div>
+                
+                <h3 class="details-card-title">✦ PUBLISH PROJECT</h3>
+                <form class="details-contact-form" id="formAddProject">
+                    <div class="details-form-group">
+                        <label for="projTitle">Project Title</label>
+                        <input type="text" id="projTitle" required placeholder="e.g. 3D Renderer">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="projCategory">Category</label>
+                        <input type="text" id="projCategory" required placeholder="e.g. Frontend Engine, Audio Synth, Graphics Engine">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="projTags">Tags (comma separated)</label>
+                        <input type="text" id="projTags" required placeholder="e.g. Web Audio, LFO, JS, Canvas">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="projGithub">GitHub Link</label>
+                        <input type="url" id="projGithub" required placeholder="https://github.com/profile/repo">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="projLive">Live Demo URL (use '#' if none)</label>
+                        <input type="text" id="projLive" required value="#">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="projDesc">Short Description</label>
+                        <textarea id="projDesc" rows="5" required placeholder="Brief summary of what this project compiles into..."></textarea>
+                    </div>
+                    <button type="submit" class="details-submit-btn">PUBLISH SIGNAL ➔</button>
+                </form>
+            </section>
+
+            <!-- Managed Projects Table View -->
+            <section class="details-card-section" style="margin-bottom: 0;">
+                <div class="card-bracket top-left"></div>
+                <div class="card-bracket top-right"></div>
+                <div class="card-bracket bottom-left"></div>
+                <div class="card-bracket bottom-right"></div>
+                
+                <h3 class="details-card-title">✦ PORTFOLIO PRODUCTS</h3>
+                <table class="db-table" id="tableProjects">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Tags</th>
+                            <th style="width: 80px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Syncing database...</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="details-footer">
+            <p>© 2026 Bhavya Jangid. Admin Projects Console.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const formAddProject = document.getElementById('formAddProject');
+        const tableProjects = document.getElementById('tableProjects').querySelector('tbody');
+        const btnLogout = document.getElementById('btnLogout');
+
+        // Submit Project
+        formAddProject.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            playLocalClick();
+
+            const newProj = {
+                title: document.getElementById('projTitle').value,
+                category: document.getElementById('projCategory').value,
+                tags: document.getElementById('projTags').value.split(',').map(t => t.trim()),
+                description: document.getElementById('projDesc').value,
+                links: {
+                    live: document.getElementById('projLive').value,
+                    github: document.getElementById('projGithub').value
+                }
+            };
+
+            try {
+                const res = await fetch('/api/projects', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newProj)
+                });
+                if (res.status === 401) {
+                    alert("Session expired. Redirecting to login.");
+                    window.location.href = '/login?redirect=/admin-projects';
+                    return;
+                }
+                if (!res.ok) throw new Error("Backend save failure");
+                
+                alert("Project published successfully!");
+                formAddProject.reset();
+                document.getElementById('projLive').value = "#";
+                syncDatabaseViews();
+            } catch (err) {
+                alert(`Error saving project: ${err.message}`);
+            }
+        });
+
+        // Delete Project
+        async function deleteProject(id) {
+            if (!confirm("Are you sure you want to delete this project?")) return;
+            playLocalClick();
+            
+            try {
+                const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+                if (res.status === 401) {
+                    alert("Unauthorized. Redirecting to login.");
+                    window.location.href = '/login?redirect=/admin-projects';
+                    return;
+                }
+                if (!res.ok) throw new Error("Backend delete failure");
+                
+                alert("Project deleted successfully!");
+                syncDatabaseViews();
+            } catch (err) {
+                alert(`Delete error: ${err.message}`);
+            }
+        }
+
+        // Logout
+        btnLogout.addEventListener('click', (e) => {
+            e.preventDefault();
+            playLocalClick();
+            // Expire cookie
+            document.cookie = "session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            window.location.href = '/login';
+        });
+
+        // Sync Database list views
+        async function syncDatabaseViews() {
+            try {
+                const res = await fetch('/api/projects');
+                if (res.status === 401) {
+                    window.location.href = '/login?redirect=/admin-projects';
+                    return;
+                }
+                const projects = await res.json();
+                tableProjects.innerHTML = projects.length === 0 
+                    ? `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No projects in database.</td></tr>`
+                    : projects.map(p => `
+                        <tr>
+                            <td><strong>${p.title}</strong></td>
+                            <td>${p.category}</td>
+                            <td>${p.tags.join(', ')}</td>
+                            <td><button class="delete-btn" onclick="deleteProject('${p.id}')">Delete</button></td>
+                        </tr>
+                    `).join('');
+            } catch (err) {
+                console.error("Sync error:", err);
+            }
+        }
+
+        /* Local Mechanical click synth */
+        let localCtx = null;
+        function playLocalClick() {
+            try {
+                if (!localCtx) {
+                    localCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (localCtx.state === 'suspended') localCtx.resume();
+                const now = localCtx.currentTime;
+                
+                const bufferSize = localCtx.sampleRate * 0.01;
+                const buffer = localCtx.createBuffer(1, bufferSize, localCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i=0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                
+                const noise = localCtx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = localCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(5500, now);
+                filter.Q.setValueAtTime(4, now);
+                
+                const gain = localCtx.createGain();
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.008);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(localCtx.destination);
+                
+                const osc = localCtx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(180, now);
+                const oscGain = localCtx.createGain();
+                oscGain.gain.setValueAtTime(0.04, now);
+                oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+                
+                osc.connect(oscGain);
+                oscGain.connect(localCtx.destination);
+                
+                noise.start(now);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } catch(e) {}
+        }
+
+        // Apply theme variables
+        function loadSavedTheme() {
+            const savedColor = localStorage.getItem('portfolio-custom-color');
+            if (savedColor) {
+                document.documentElement.style.setProperty('--accent-color', savedColor);
+                let hex = savedColor.replace('#', '');
+                if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                document.documentElement.style.setProperty('--accent-color-rgb', `${r}, ${g}, ${b}`);
+                document.documentElement.style.setProperty('--accent-glow', `0 0 12px rgba(${r}, ${g}, ${b}, 0.7), 0 0 30px rgba(${r}, ${g}, ${b}, 0.3)`);
+            }
+        }
+        loadSavedTheme();
+        syncDatabaseViews();
+    </script>
+</body>
+</html>

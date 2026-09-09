@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog CMS Panel - Bhavya Jangid</title>
+    <meta name="robots" content="noindex, nofollow">
+    <!-- Favicon link -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.0.2">
+    <style>
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 900px) {
+            .admin-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .db-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(10, 14, 25, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        .db-table th, .db-table td {
+            padding: 10px 14px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .db-table th {
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--accent-color);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        .db-table tr:hover {
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .delete-btn {
+            background: rgba(255, 95, 86, 0.15);
+            border: 1px solid #ff5f56;
+            color: #ff8e88;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            transition: all 0.2s ease;
+        }
+        .delete-btn:hover {
+            background: #ff5f56;
+            color: #05070c;
+            box-shadow: 0 0 10px rgba(255, 95, 86, 0.3);
+        }
+        .feature-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+        }
+        .feature-panel h4 {
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+            font-family: var(--font-mono);
+        }
+        .feature-panel code {
+            background: rgba(0,0,0,0.3);
+            color: #ffcc00;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+        }
+        .live-preview {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            padding: 1rem;
+            min-height: 120px;
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+        .live-preview h3 {
+            font-size: 1rem;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            color: var(--accent-color);
+        }
+        .live-preview p {
+            margin-bottom: 8px;
+        }
+        .live-preview img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin: 8px 0;
+            display: block;
+        }
+    </style>
+</head>
+<body class="theme-custom details-page-body">
+    <!-- Fixed Beach background container -->
+    <div class="fixed-beach-bg"></div>
+
+    <div class="details-layout-wrapper" style="max-width: 1100px;">
+        
+        <!-- Sticky Navigation Header -->
+        <header class="details-header">
+            <a href="/" class="details-logo-area">
+                ➔ BACK TO HOME
+            </a>
+            <nav class="details-nav-links">
+                <a href="/admin-blogs" class="details-nav-item active">BLOG CMS</a>
+                <a href="/admin-projects" class="details-nav-item">PROJECT CMS</a>
+                <a href="#" id="btnLogout" class="details-nav-item" style="color: #ff5f56;">LOGOUT</a>
+            </nav>
+        </header>
+
+        <!-- Route Banner -->
+        <div class="breadcrumb-banner">
+            <span class="path-root">System</span> / <span class="path-node">CMS_Blogs_Console.sh</span>
+        </div>
+
+        <h2 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem; text-shadow: 0 4px 10px rgba(0,0,0,0.5);">Engine Blog CMS Console</h2>
+        <p class="details-text" style="margin-bottom: 2rem;">Write and publish dynamic, search-optimized dynamic articles.</p>
+
+        <div class="admin-grid">
+            
+            <!-- Blog Creator Form -->
+            <section class="details-card-section" style="margin-bottom: 0;">
+                <div class="card-bracket top-left"></div>
+                <div class="card-bracket top-right"></div>
+                <div class="card-bracket bottom-left"></div>
+                <div class="card-bracket bottom-right"></div>
+                
+                <h3 class="details-card-title">✦ COMPOSE ARTICLE</h3>
+                <form class="details-contact-form" id="formAddBlog">
+                    <div class="details-form-group">
+                        <label for="blogTitle">Blog Title</label>
+                        <input type="text" id="blogTitle" required placeholder="e.g. AI Search Engines & Bots">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="blogSlug">URL Slug (alphanumeric & dashes only)</label>
+                        <input type="text" id="blogSlug" required placeholder="e.g. ai-search-engines-bots">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="blogCategory">Category</label>
+                        <input type="text" id="blogCategory" required placeholder="e.g. AI, Web Audio, CSS Secrets">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="blogTags">Tags (comma separated)</label>
+                        <input type="text" id="blogTags" required placeholder="e.g. SEO, Search, Robots, Crawler">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="blogYear">Publish Year</label>
+                        <input type="text" id="blogYear" required value="2026" maxlength="4">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="blogDesc">Meta Description (For SEO and Crawler summaries)</label>
+                        <input type="text" id="blogDesc" required placeholder="Brief index snippet for Google / LLM indexing...">
+                    </div>
+                    <div class="details-form-group">
+                        <label for="blogContent">Article HTML Content</label>
+                        <textarea id="blogContent" rows="8" required placeholder="<h3>Sub-heading</h3><p>Enter article body here...</p>"></textarea>
+                        
+                        <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--accent-color); margin-top: 12px; font-weight: bold;">LIVE CONTENT RENDER PREVIEW:</div>
+                        <div class="live-preview" id="previewContainer">
+                            <p style="color: var(--text-muted); font-style: italic;">HTML preview renders here as you type...</p>
+                        </div>
+                    </div>
+                    <button type="submit" class="details-submit-btn">PUBLISH SIGNAL ➔</button>
+                </form>
+            </section>
+
+            <!-- Guide & Formatting Console -->
+            <div>
+                <section class="details-card-section" style="margin-bottom: 0;">
+                    <div class="card-bracket top-left"></div>
+                    <div class="card-bracket top-right"></div>
+                    <div class="card-bracket bottom-left"></div>
+                    <div class="card-bracket bottom-right"></div>
+                    
+                    <h3 class="details-card-title">✦ EDITOR INSTRUCTIONS</h3>
+                    <div class="details-card-body" style="gap: 1rem;">
+                        <div class="feature-panel">
+                            <h4>🔗 Internal Linking</h4>
+                            <p style="margin-bottom: 6px;">Link other pages using clean URL anchors to allow bots to crawl your profile recursively:</p>
+                            <code>&lt;a href="/about"&gt;About biography&lt;/a&gt;</code><br>
+                            <code style="margin-top: 4px; display: inline-block;">&lt;a href="/projects"&gt;Projects catalog&lt;/a&gt;</code>
+                        </div>
+
+                        <div class="feature-panel">
+                            <h4>🖼️ Embedding Images</h4>
+                            <p style="margin-bottom: 6px;">Inject standard HTML image tags referencing files placed in the public directories:</p>
+                            <code>&lt;img src="/favicon.png" alt="..."&gt;</code>
+                        </div>
+
+                        <div class="feature-panel">
+                            <h4>🤖 LLM Crawler Optimization</h4>
+                            <p style="margin-bottom: 6px;">AI scrapers prioritize semantic structures. Format paragraphs using HTML templates:</p>
+                            <ul style="padding-left: 1rem; margin-top: 4px; display: flex; flex-direction: column; gap: 3px;">
+                                <li>Use <code>&lt;h3&gt;</code> for heading tags</li>
+                                <li>Use <code>&lt;p&gt;</code> for normal paragraphs</li>
+                                <li>Wrap codes in <code>&lt;pre&gt;&lt;code&gt;...&lt;/code&gt;&lt;/pre&gt;</code></li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+        </div>
+
+        <!-- Managed listings -->
+        <section class="details-card-section" style="margin-top: 2rem;">
+            <div class="card-bracket top-left"></div>
+            <div class="card-bracket top-right"></div>
+            <div class="card-bracket bottom-left"></div>
+            <div class="card-bracket bottom-right"></div>
+            
+            <h3 class="details-card-title">✦ PUBLISHED ARTICLES</h3>
+            <table class="db-table" id="tableBlogs">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Path Route</th>
+                        <th>Category</th>
+                        <th>Date</th>
+                        <th style="width: 80px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Retrieving server listings...</td></tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Footer -->
+        <footer class="details-footer">
+            <p>© 2026 Bhavya Jangid. Admin Blogs Console.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const formAddBlog = document.getElementById('formAddBlog');
+        const blogContent = document.getElementById('blogContent');
+        const previewContainer = document.getElementById('previewContainer');
+        const tableBlogs = document.getElementById('tableBlogs').querySelector('tbody');
+        const btnLogout = document.getElementById('btnLogout');
+
+        // Render preview in real-time
+        blogContent.addEventListener('input', () => {
+            const rawContent = blogContent.value.trim();
+            if (rawContent) {
+                previewContainer.innerHTML = rawContent;
+            } else {
+                previewContainer.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">HTML preview renders here as you type...</p>';
+            }
+        });
+
+        // Submit Blog
+        formAddBlog.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            playLocalClick();
+
+            const newBlog = {
+                title: document.getElementById('blogTitle').value,
+                slug: document.getElementById('blogSlug').value.toLowerCase().replace(/[^a-z0-9-_]/g, ''),
+                category: document.getElementById('blogCategory').value,
+                tags: document.getElementById('blogTags').value.split(',').map(t => t.trim()),
+                year: document.getElementById('blogYear').value,
+                description: document.getElementById('blogDesc').value,
+                content: blogContent.value
+            };
+
+            try {
+                const res = await fetch('/api/blogs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newBlog)
+                });
+                if (res.status === 401) {
+                    alert("Session expired. Redirecting to login.");
+                    window.location.href = '/login?redirect=/admin-blogs';
+                    return;
+                }
+                if (!res.ok) throw new Error("Backend save failure");
+                
+                alert("Blog article published successfully!");
+                formAddBlog.reset();
+                previewContainer.innerHTML = '<p style="color: var(--text-muted); font-style: italic;">HTML preview renders here as you type...</p>';
+                document.getElementById('blogYear').value = "2026";
+                syncDatabaseViews();
+            } catch (err) {
+                alert(`Error saving blog: ${err.message}`);
+            }
+        });
+
+        // Delete Blog
+        async function deleteBlog(id) {
+            if (!confirm("Are you sure you want to delete this blog post?")) return;
+            playLocalClick();
+            
+            try {
+                const res = await fetch(`/api/blogs/${id}`, { method: 'DELETE' });
+                if (res.status === 401) {
+                    alert("Unauthorized. Redirecting to login.");
+                    window.location.href = '/login?redirect=/admin-blogs';
+                    return;
+                }
+                if (!res.ok) throw new Error("Backend delete failure");
+                
+                alert("Blog post deleted successfully!");
+                syncDatabaseViews();
+            } catch (err) {
+                alert(`Delete error: ${err.message}`);
+            }
+        }
+
+        // Logout
+        btnLogout.addEventListener('click', (e) => {
+            e.preventDefault();
+            playLocalClick();
+            // Expire session cookie
+            document.cookie = "session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            window.location.href = '/login';
+        });
+
+        // Sync Database view list
+        async function syncDatabaseViews() {
+            try {
+                const res = await fetch('/api/blogs');
+                if (res.status === 401) {
+                    window.location.href = '/login?redirect=/admin-blogs';
+                    return;
+                }
+                const blogs = await res.json();
+                tableBlogs.innerHTML = blogs.length === 0 
+                    ? `<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No blog posts in database.</td></tr>`
+                    : blogs.map(b => `
+                        <tr>
+                            <td><strong>${b.title}</strong></td>
+                            <td><a href="/Blog/${b.year}/${b.slug}" target="_blank" style="color: var(--accent-color); font-family: var(--font-mono);">/Blog/${b.year}/${b.slug}</a></td>
+                            <td>${b.category}</td>
+                            <td>${b.date}</td>
+                            <td><button class="delete-btn" onclick="deleteBlog('${b.id}')">Delete</button></td>
+                        </tr>
+                    `).join('');
+            } catch (err) {
+                console.error("Sync error:", err);
+            }
+        }
+
+        /* Local Mechanical click synth */
+        let localCtx = null;
+        function playLocalClick() {
+            try {
+                if (!localCtx) {
+                    localCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (localCtx.state === 'suspended') localCtx.resume();
+                const now = localCtx.currentTime;
+                
+                const bufferSize = localCtx.sampleRate * 0.01;
+                const buffer = localCtx.createBuffer(1, bufferSize, localCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i=0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                
+                const noise = localCtx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = localCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(5500, now);
+                filter.Q.setValueAtTime(4, now);
+                
+                const gain = localCtx.createGain();
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.008);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(localCtx.destination);
+                
+                const osc = localCtx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(180, now);
+                const oscGain = localCtx.createGain();
+                oscGain.gain.setValueAtTime(0.04, now);
+                oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+                
+                osc.connect(oscGain);
+                oscGain.connect(localCtx.destination);
+                
+                noise.start(now);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } catch(e) {}
+        }
+
+        // Apply theme variables
+        function loadSavedTheme() {
+            const savedColor = localStorage.getItem('portfolio-custom-color');
+            if (savedColor) {
+                document.documentElement.style.setProperty('--accent-color', savedColor);
+                let hex = savedColor.replace('#', '');
+                if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                document.documentElement.style.setProperty('--accent-color-rgb', `${r}, ${g}, ${b}`);
+                document.documentElement.style.setProperty('--accent-glow', `0 0 12px rgba(${r}, ${g}, ${b}, 0.7), 0 0 30px rgba(${r}, ${g}, ${b}, 0.3)`);
+            }
+        }
+        loadSavedTheme();
+        syncDatabaseViews();
+    </script>
+</body>
+</html>

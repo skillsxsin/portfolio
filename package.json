@@ -1,0 +1,9 @@
+{
+  "name": "png-game-website",
+  "version": "1.0.0",
+  "description": "Static HTML website hosted via Express",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

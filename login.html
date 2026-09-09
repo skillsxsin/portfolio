@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS Authenticate - Bhavya Jangid</title>
+    <meta name="robots" content="noindex, nofollow">
+    <!-- Favicon link -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.0.2">
+    <style>
+        .login-card-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 200px);
+            position: relative;
+            z-index: 10;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--bg-dark-glass);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            position: relative;
+        }
+        .login-error {
+            color: #ff5f56;
+            font-size: 0.78rem;
+            font-family: var(--font-mono);
+            margin-top: 8px;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="theme-custom details-page-body">
+    <!-- Fixed Beach background container -->
+    <div class="fixed-beach-bg"></div>
+
+    <div class="details-layout-wrapper">
+        
+        <!-- Sticky Navigation Header -->
+        <header class="details-header">
+            <a href="/" class="details-logo-area">
+                ❰ BACK TO HOME
+            </a>
+            <nav class="details-nav-links">
+                <a href="/about" class="details-nav-item">ABOUT</a>
+                <a href="/projects" class="details-nav-item">PROJECTS</a>
+                <a href="/blogs" class="details-nav-item">BLOGS</a>
+            </nav>
+        </header>
+
+        <!-- Route Banner -->
+        <div class="breadcrumb-banner">
+            <span class="path-root">Security</span> / <span class="path-node">Auth_Portal.exe</span>
+        </div>
+
+        <div class="login-card-container">
+            <div class="login-card">
+                <!-- Corner Neon Brackets -->
+                <div class="card-bracket top-left"></div>
+                <div class="card-bracket top-right"></div>
+                <div class="card-bracket bottom-left"></div>
+                <div class="card-bracket bottom-right"></div>
+
+                <h3 class="details-card-title" style="text-align: center; font-size: 1.1rem; margin-bottom: 1.5rem;">✦ SECURE AUTHENTICATION</h3>
+                <form class="details-contact-form" id="formLogin">
+                    <!-- Password Input -->
+                    <div class="details-form-group" id="groupPassword">
+                        <label for="txtPassword">Admin Password</label>
+                        <input type="password" id="txtPassword" required placeholder="Enter password to sync CMS">
+                    </div>
+
+                    <div class="login-error" id="lblError">Invalid Credentials</div>
+                    <button type="submit" class="details-submit-btn" id="btnSubmit" style="margin-top: 0.5rem; width: 100%;">VALIDATE SIGNAL ➔</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="details-footer">
+            <p>© 2026 Bhavya Jangid. Verification console.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        const formLogin = document.getElementById('formLogin');
+        const txtPassword = document.getElementById('txtPassword');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const lblError = document.getElementById('lblError');
+
+        formLogin.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            playLocalClick();
+            lblError.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: txtPassword.value })
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (response.ok && data.success) {
+                    // Redirect
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const redirect = urlParams.get('redirect') || '/admin-blogs';
+                    window.location.href = redirect;
+                } else {
+                    lblError.style.display = 'block';
+                    lblError.textContent = data.error || 'Invalid Password';
+                }
+            } catch (err) {
+                lblError.style.display = 'block';
+                lblError.textContent = `Error: ${err.message}`;
+            }
+        });
+
+        /* Local Mechanical click synth */
+        let localCtx = null;
+        function playLocalClick() {
+            try {
+                if (!localCtx) {
+                    localCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (localCtx.state === 'suspended') localCtx.resume();
+                const now = localCtx.currentTime;
+                
+                const bufferSize = localCtx.sampleRate * 0.01;
+                const buffer = localCtx.createBuffer(1, bufferSize, localCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i=0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                
+                const noise = localCtx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = localCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(5500, now);
+                filter.Q.setValueAtTime(4, now);
+                
+                const gain = localCtx.createGain();
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.008);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(localCtx.destination);
+                
+                const osc = localCtx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(180, now);
+                const oscGain = localCtx.createGain();
+                oscGain.gain.setValueAtTime(0.04, now);
+                oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+                
+                osc.connect(oscGain);
+                oscGain.connect(localCtx.destination);
+                
+                noise.start(now);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } catch(e) {}
+        }
+
+        // Apply Custom Accent Theme color dynamically
+        function loadSavedTheme() {
+            const savedColor = localStorage.getItem('portfolio-custom-color');
+            if (savedColor) {
+                document.documentElement.style.setProperty('--accent-color', savedColor);
+                let hex = savedColor.replace('#', '');
+                if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                document.documentElement.style.setProperty('--accent-color-rgb', `${r}, ${g}, ${b}`);
+                document.documentElement.style.setProperty('--accent-glow', `0 0 12px rgba(${r}, ${g}, ${b}, 0.7), 0 0 30px rgba(${r}, ${g}, ${b}, 0.3)`);
+            }
+        }
+        loadSavedTheme();
+    </script>
+</body>
+</html>

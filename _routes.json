@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/styles.css",
+    "/app.js",
+    "/*.png",
+    "/*.ico",
+    "/projects/hidden-agenda*",
+    "/_next/*",
+    "/favicon.png",
+    "/beach-background.png",
+    "/mountain-background.png",
+    "/standing.png",
+    "/left-move.png",
+    "/left-strafe.png",
+    "/right-move.png",
+    "/right-strafe.png"
+  ]
+}

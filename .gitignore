@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+package-lock.json.log
+
+# Cloudflare & Next.js Builds
+.wrangler/
+.next/
+Mafia style game/.next/
+Mafia style game/node_modules/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.log
+all testing/logs/
+
+# IDE & OS specific files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.gemini/
+*.tsbuildinfo

@@ -1,0 +1,67 @@
+# Robots.txt for Bhavya Jangid's Portfolio
+# Allow all search engine bots and AI LLM crawlers
+
+User-agent: *
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Allow: /
+Allow: /about
+Allow: /projects
+Allow: /projects/hidden-agenda/
+Allow: /blogs
+Allow: /Blog/
+Allow: /contact
+Allow: /llms.txt
+Allow: /llm-profile.md
+Allow: /sitemap.xml
+
+# Gated Admin Routes & Internal API
+Disallow: /admin
+Disallow: /admin-blogs
+Disallow: /admin-projects
+Disallow: /admin.html
+Disallow: /admin-blogs.html
+Disallow: /admin-projects.html
+Disallow: /login
+Disallow: /login.html
+Disallow: /api/
+
+User-agent: Googlebot
+Allow: /
+Allow: /about
+Allow: /projects
+Allow: /projects/hidden-agenda/
+Allow: /blogs
+Allow: /Blog/
+Allow: /contact
+Allow: /sitemap.xml
+Disallow: /admin
+Disallow: /admin-blogs
+Disallow: /admin-projects
+Disallow: /login
+Disallow: /api/
+
+User-agent: Google-Extended
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Allow: /
+Allow: /llms.txt
+Allow: /llm-profile.md
+
+User-agent: GPTBot
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Allow: /
+Allow: /llms.txt
+Allow: /llm-profile.md
+
+User-agent: ClaudeBot
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Allow: /
+Allow: /llms.txt
+Allow: /llm-profile.md
+
+User-agent: Applebot-Extended
+Content-Signal: ai-train=yes, search=yes, ai-input=yes
+Allow: /
+Allow: /llms.txt
+Allow: /llm-profile.md
+
+Sitemap: https://bhavyajangid.com/sitemap.xml

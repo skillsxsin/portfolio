@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact - Bhavya Jangid's Portfolio</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Transmit a signal to Bhavya Jangid. Get in touch for frontend development, Node.js backend systems, and Web Audio API architecture projects.">
+    <meta property="og:title" content="Contact - Bhavya Jangid's Portfolio">
+    <meta property="og:description" content="Get in touch with Bhavya Jangid for professional software development projects.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://bhavyajangid.com/contact">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="canonical" href="https://bhavyajangid.com/contact">
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+    
+    <!-- LLM Discoverability Headers -->
+    <link rel="llm-profile" type="text/markdown" href="/llm-profile.md">
+    <link rel="llms-txt" type="text/markdown" href="/llms.txt">
+    
+    <!-- Favicon link -->
+    <link rel="icon" type="image/png" href="favicon.png">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=1.0.2">
+    
+    <!-- JSON-LD Structured Data for SEO & GenAI Crawlers -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Bhavya Jangid",
+      "jobTitle": "Product Analyst",
+      "url": "https://bhavyajangid.com/contact",
+      "knowsAbout": ["Python", "SQL", "Power BI", "Process Automation", "LLMs", "Agents", "AI Integrations", "Web Development"],
+      "sameAs": [
+        "https://www.linkedin.com/in/bhavya-jangid/"
+      ]
+    }
+    </script>
+</head>
+<body class="theme-custom details-page-body">
+    <!-- Fixed Beach background container (zero repeats/stretching) -->
+    <div class="fixed-beach-bg"></div>
+
+    <!-- Main Layout Wrapper -->
+    <div class="details-layout-wrapper">
+        
+        <!-- Sticky Navigation Header -->
+        <header class="details-header">
+            <a href="/" class="details-logo-area" onclick="playLocalClick();">
+                BHAVYA JANGID // PORTFOLIO
+            </a>
+            
+            <button class="hamburger-menu-btn" id="btnHamburger" title="Toggle Menu">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+
+            <nav class="details-nav-links" id="detailsNav">
+                <a href="/about" class="details-nav-item">ABOUT</a>
+                <a href="/projects" class="details-nav-item">PROJECTS</a>
+                <a href="/blogs" class="details-nav-item">BLOGS</a>
+                <a href="/contact" class="details-nav-item active">CONTACT</a>
+            </nav>
+        </header>
+
+        <!-- Modern Page Hero Banner -->
+        <div class="stage-banner">
+            <div>
+                <div class="stage-badge">CONTACT & COLLABORATION</div>
+                <h1 class="stage-title">Get In Touch</h1>
+                <p class="stage-subtitle">Have a project idea, technical inquiry, or looking to connect? Feel free to reach out.</p>
+            </div>
+            <div class="stage-stats-pill">
+                <span class="status-dot"></span> Direct Inbox
+            </div>
+        </div>
+
+        <!-- Main Card Section -->
+        <div class="main-card-layout-container">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2rem; width: 100%;">
+                <section class="details-card-section" id="contact">
+                    <div class="card-bracket top-left"></div>
+                    <div class="card-bracket top-right"></div>
+                    <div class="card-bracket bottom-left"></div>
+                    <div class="card-bracket bottom-right"></div>
+
+                    <h2 class="details-card-title">SEND A MESSAGE</h2>
+                    <div class="details-card-body">
+                        <form class="details-contact-form" id="formDetailsContact">
+                            <div class="details-form-group">
+                                <label for="txtName">Your Name</label>
+                                <input type="text" id="txtName" required placeholder="What should I call you?">
+                            </div>
+                            <div class="details-form-group">
+                                <label for="txtEmail">Email Address</label>
+                                <input type="email" id="txtEmail" required placeholder="your.email@example.com">
+                            </div>
+                            <div class="details-form-group">
+                                <label for="txtMessage">Message</label>
+                                <textarea id="txtMessage" rows="5" required placeholder="Tell me about your project, idea, or inquiry..."></textarea>
+                            </div>
+                            <div id="contactStatus" class="contact-status-box" style="display: none; margin-bottom: 1.5rem; font-family: var(--font-mono); font-size: 0.85rem; padding: 10px; border-radius: 4px; border: 1px solid var(--accent-color); background: rgba(0, 0, 0, 0.4); text-align: left;"></div>
+                            <button type="submit" class="details-submit-btn">SEND MESSAGE ➔</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <footer class="details-footer">
+            <div class="footer-social-links">
+                <a href="mailto:jangidbhavya99@gmail.com" class="footer-social-icon" title="Email" onclick="playLocalClick();">
+                    <svg class="social-icon" viewBox="0 0 24 24">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                </a>
+                <a href="https://wa.me/918955136723" target="_blank" rel="noopener noreferrer" class="footer-social-icon" title="WhatsApp (+91 8955136723)" onclick="playLocalClick();">
+                    <svg class="social-icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.04 2zm.01 1.67c2.2 0 4.26.86 5.82 2.42 1.55 1.56 2.41 3.63 2.41 5.83 0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.39-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.32a8.196 8.196 0 0 1-1.26-4.36c0-4.54 3.69-8.24 8.24-8.24zm-2.94 3.77c-.16 0-.43.06-.65.3-.22.23-.84.82-.84 2.02 0 1.2.88 2.35 1 2.52.13.16 1.66 2.61 4.08 3.56 2.02.79 2.43.63 2.87.59.44-.04 1.43-.59 1.63-1.15.2-.56.2-1.04.14-1.14-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.7-1.65-.78-.22-.08-.38-.12-.54.12-.16.24-.62.78-.76.94-.14.16-.28.18-.52.06-.24-.12-1.01-.37-1.93-1.19-.71-.64-1.2-1.43-1.33-1.67-.14-.24-.02-.37.1-.49.11-.11.25-.3.37-.44.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.52-1.25-.71-1.72-.19-.45-.38-.39-.52-.4-.14-.01-.3-.03-.5-.03z"/>
+                    </svg>
+                </a>
+                <a href="https://github.com/skillsxsin" target="_blank" rel="noopener noreferrer" class="footer-social-icon" title="GitHub (@skillsxsin)" onclick="playLocalClick();">
+                    <svg class="social-icon" viewBox="0 0 24 24">
+                        <path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2z"/>
+                    </svg>
+                </a>
+                <a href="https://www.linkedin.com/in/bhavya-jangid/" target="_blank" rel="noopener noreferrer" class="footer-social-icon" title="LinkedIn" onclick="playLocalClick();">
+                    <svg class="social-icon" viewBox="0 0 24 24">
+                        <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+                    </svg>
+                </a>
+            </div>
+            <p>© 2026 Bhavya Jangid. Crafted with Vanilla CSS & Retro Design.</p>
+        </footer>
+
+    </div>
+
+    <!-- Scripting for details logic -->
+    <script>
+        const btnHamburger = document.getElementById('btnHamburger');
+        const detailsNav = document.getElementById('detailsNav');
+        
+        btnHamburger.addEventListener('click', () => {
+            btnHamburger.classList.toggle('active');
+            detailsNav.classList.toggle('open');
+            playLocalClick();
+        });
+
+        /* Local Mechanical click synth */
+        let localCtx = null;
+        function playLocalClick() {
+            try {
+                if (!localCtx) {
+                    localCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (localCtx.state === 'suspended') localCtx.resume();
+                const now = localCtx.currentTime;
+                
+                const bufferSize = localCtx.sampleRate * 0.01;
+                const buffer = localCtx.createBuffer(1, bufferSize, localCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i=0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                
+                const noise = localCtx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = localCtx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(5500, now);
+                filter.Q.setValueAtTime(4, now);
+                
+                const gain = localCtx.createGain();
+                gain.gain.setValueAtTime(0.06, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.008);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(localCtx.destination);
+                
+                const osc = localCtx.createOscillator();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(180, now);
+                const oscGain = localCtx.createGain();
+                oscGain.gain.setValueAtTime(0.04, now);
+                oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+                
+                osc.connect(oscGain);
+                oscGain.connect(localCtx.destination);
+                
+                noise.start(now);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } catch(e) {}
+        }
+
+        // Apply Custom Accent Theme color dynamically
+        function loadSavedTheme() {
+            const savedColor = localStorage.getItem('portfolio-custom-color');
+            if (savedColor) {
+                document.documentElement.style.setProperty('--accent-color', savedColor);
+                let hex = savedColor.replace('#', '');
+                if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+                const r = parseInt(hex.substring(0, 2), 16);
+                const g = parseInt(hex.substring(2, 4), 16);
+                const b = parseInt(hex.substring(4, 6), 16);
+                document.documentElement.style.setProperty('--accent-color-rgb', `${r}, ${g}, ${b}`);
+                document.documentElement.style.setProperty('--accent-glow', `0 0 12px rgba(${r}, ${g}, ${b}, 0.7), 0 0 30px rgba(${r}, ${g}, ${b}, 0.3)`);
+            }
+        }
+        loadSavedTheme();
+
+        // Contact form submit
+        const formContact = document.getElementById('formDetailsContact');
+        const contactStatus = document.getElementById('contactStatus');
+        
+        formContact.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            playLocalClick();
+            
+            const name = document.getElementById('txtName').value;
+            const email = document.getElementById('txtEmail').value;
+            const message = document.getElementById('txtMessage').value;
+            
+            contactStatus.style.display = 'block';
+            contactStatus.style.borderColor = 'var(--accent-color)';
+            contactStatus.style.color = 'var(--text-primary)';
+            contactStatus.innerHTML = `[status] Transmitting signal...`;
+            
+            try {
+                const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, message })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    contactStatus.style.borderColor = '#00ff66';
+                    contactStatus.style.color = '#00ff66';
+                    contactStatus.innerHTML = `[success] Signal logged: ${result.message}`;
+                    formContact.reset();
+                } else {
+                    contactStatus.style.borderColor = '#ff5f56';
+                    contactStatus.style.color = '#ff5f56';
+                    contactStatus.innerHTML = `[error] Transmission failed: ${result.error || 'Unknown error'}`;
+                }
+            } catch (err) {
+                contactStatus.style.borderColor = '#ff5f56';
+                contactStatus.style.color = '#ff5f56';
+                contactStatus.innerHTML = `[error] Connection lost: ${err.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

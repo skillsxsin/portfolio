@@ -1,0 +1,103 @@
+{
+  "blogs": [],
+  "projects": [
+    {
+      "id": "p4",
+      "title": "Hidden Agenda — Real-Time Social Deduction Game",
+      "category": "Web Apps & Games",
+      "tags": [
+        "Next.js",
+        "Socket.io",
+        "React",
+        "Node.js",
+        "Web Audio API"
+      ],
+      "links": {
+        "live": "/projects/hidden-agenda/",
+        "github": "https://github.com/skillsxsin"
+      },
+      "description": "A real-time multiplayer social deduction game built for 4 to 20 players inspired by Mafia and Among Us. Features secret role assignments (Director, Shadows, Guardian, Investigator, Wildcard), real-time Socket.io lobbies, dynamic voting phases, interactive clue feeds, and synthesized retro audio. Designed to test deception, logic, and team coordination directly in the browser."
+    },
+    {
+      "id": "p1",
+      "title": "Interactive Frontend & Animation Architecture",
+      "category": "Frontend",
+      "tags": [
+        "HTML5",
+        "CSS Variables",
+        "Vanilla JS",
+        "Physics Loops"
+      ],
+      "links": {
+        "live": "/",
+        "github": "https://github.com/skillsxsin"
+      },
+      "description": "The complete interactive frontend of this portfolio. It features a custom animated avatar with walking cycles, responsive state machines, and a retro aesthetic. Built with pure Vanilla JS and CSS variables to achieve 60fps performance without framework overhead."
+    },
+    {
+      "id": "p2",
+      "title": "Native Web Audio Synthesizer",
+      "category": "Audio & Creative",
+      "tags": [
+        "Web Audio API",
+        "Oscillators",
+        "Signal Modulation"
+      ],
+      "links": {
+        "live": "/",
+        "github": "https://github.com/skillsxsin"
+      },
+      "description": "Programmatic sound generation built natively for the web. Instead of loading heavy static audio files, this engine utilizes the Web Audio API to synthesize mechanical key clicks and keyboard clacks from scratch with low-latency oscillator nodes and noise buffers."
+    },
+    {
+      "id": "p3",
+      "title": "Node.js Integration & Server-Side Engine",
+      "category": "Backend & APIs",
+      "tags": [
+        "Node.js",
+        "REST APIs",
+        "SSR Pre-rendering",
+        "Cloudflare Workers"
+      ],
+      "links": {
+        "live": "/docs/api",
+        "github": "https://github.com/skillsxsin"
+      },
+      "description": "The lightweight backend architecture powering the portfolio. Built on vanilla Node.js and Cloudflare Workers, handling clean URL routing, dynamic server-side pre-rendering for SEO, automated sitemap synchronization, and rate-limited form endpoints with zero heavy dependencies."
+    }
+  ],
+  "contacts": [
+    {
+      "id": "c_1781285465450",
+      "name": "Test User",
+      "email": "test@example.com",
+      "message": "Hello this is a test message.",
+      "date": "2026-06-12T17:31:05.450Z",
+      "ip": "::1"
+    },
+    {
+      "id": "c_1781285480619",
+      "name": "Test User",
+      "email": "test@example.com",
+      "message": "Hello this is a test message.",
+      "date": "2026-06-12T17:31:20.619Z",
+      "ip": "::1"
+    },
+    {
+      "id": "c_1781635325101",
+      "name": "Hello",
+      "email": "hello@gmail.com",
+      "message": "Hdhhdndn",
+      "date": "2026-06-16T18:42:05.101Z",
+      "ip": "2401:4900:af61:ae80:25e2:63c:bc91:83de"
+    },
+    {
+      "id": "c_1781637333388",
+      "name": "Mehul",
+      "email": "abc@gmail.com",
+      "message": "hello",
+      "date": "2026-06-16T19:15:33.388Z",
+      "ip": "2405:201:5c14:e0a1:5c89:1da8:cdd3:3bee"
+    }
+  ]
+}

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation - Bhavya Jangid</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0f12;
+            --card-bg: rgba(22, 28, 36, 0.45);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --accent-color: #ffcc00;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            --code-bg: #151a21;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Outfit', sans-serif;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 24px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent-color) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .lead-text {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin: 30px 0 15px 0;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 12px;
+        }
+
+        .api-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .api-card:hover {
+            border-color: rgba(255, 204, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .method {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        .method.get {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .method.post {
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .method.delete {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .path {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .description {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        td.param-name {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        td.param-type {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-muted);
+        }
+
+        .code-block {
+            background-color: var(--code-bg);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            color: #e5e7eb;
+            margin-top: 12px;
+        }
+
+        .section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin: 20px 0 8px 0;
+        }
+
+        .btn-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s ease;
+        }
+
+        .btn-link:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            margin-top: 80px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bhavya Jangid's Portfolio API</h1>
+            <p class="lead-text">Exposing clean, programmatic endpoints for retrieval, log auditing, and message submissions.</p>
+        </header>
+
+        <h2>API Endpoints</h2>
+
+        <!-- GET /api/projects -->
+        <div class="api-card">
+            <div class="endpoint-header">
+                <span class="method get">GET</span>
+                <span class="path">/api/projects</span>
+            </div>
+            <div class="description">Retrieve the complete catalog of engineering projects. Returns details including titles, descriptions, categories, links, and technical tags.</div>
+            <div class="section-title">Response (200 OK)</div>
+            <pre class="code-block">[
+  {
+    "id": "p1",
+    "title": "UI and Frontend Architecture",
+    "category": "Frontend Engine",
+    "tags": ["HTML5", "CSS variables", "Vanilla JS"],
+    "links": {
+      "live": "index.html",
+      "github": "#"
+    },
+    "description": "..."
+  }
+]</pre>
+        </div>
+
+        <!-- GET /api/blogs -->
+        <div class="api-card">
+            <div class="endpoint-header">
+                <span class="method get">GET</span>
+                <span class="path">/api/blogs</span>
+            </div>
+            <div class="description">Fetch logs and engineering blogs. Useful for AI agents to audit concepts, updates, and write-ups.</div>
+            <div class="section-title">Response (200 OK)</div>
+            <pre class="code-block">[
+  {
+    "id": "b1",
+    "title": "Example Post",
+    "category": "Web Audio API",
+    "tags": ["audio", "synthesizer"],
+    "date": "2026-06-12",
+    "year": "2026",
+    "slug": "web-audio-basics",
+    "description": "...",
+    "content": "..."
+  }
+]</pre>
+        </div>
+
+        <!-- POST /api/contact -->
+        <div class="api-card">
+            <div class="endpoint-header">
+                <span class="method post">POST</span>
+                <span class="path">/api/contact</span>
+            </div>
+            <div class="description">Submit an inquiry or contact message. Limited to 1 submission per 60 seconds per IP address.</div>
+            <div class="section-title">Request Body (JSON)</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Parameter</th>
+                        <th>Type</th>
+                        <th>Required</th>
+                        <th>Constraints</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="param-name">name</td>
+                        <td class="param-type">string</td>
+                        <td>Yes</td>
+                        <td>Max 100 chars</td>
+                    </tr>
+                    <tr>
+                        <td class="param-name">email</td>
+                        <td class="param-type">string</td>
+                        <td>Yes</td>
+                        <td>Max 100 chars, valid format</td>
+                    </tr>
+                    <tr>
+                        <td class="param-name">message</td>
+                        <td class="param-type">string</td>
+                        <td>Yes</td>
+                        <td>Max 5000 chars</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="section-title">Response (200 OK)</div>
+            <pre class="code-block">{
+  "success": true,
+  "message": "Signal transmitted successfully."
+}</pre>
+        </div>
+
+        <!-- GET /api/status -->
+        <div class="api-card">
+            <div class="endpoint-header">
+                <span class="method get">GET</span>
+                <span class="path">/api/status</span>
+            </div>
+            <div class="description">System health endpoint to verify active server operations.</div>
+            <div class="section-title">Response (200 OK)</div>
+            <pre class="code-block">{
+  "status": "ok"
+}</pre>
+        </div>
+
+        <a href="/openapi.json" class="btn-link">Download OpenAPI Specification (JSON) ➔</a>
+
+        <footer>
+            &copy; 2026 Bhavya Jangid. Exposing machine-readable discovery catalog profiles.
+        </footer>
+    </div>
+</body>
+</html>
