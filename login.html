@@ -118,7 +118,7 @@
                 if (response.ok && data.success) {
                     // Redirect
                     const urlParams = new URLSearchParams(window.location.search);
-                    const redirect = urlParams.get('redirect') || '/admin-blogs';
+                    const redirect = urlParams.get('redirect') || '/admin';
                     window.location.href = redirect;
                 } else {
                     lblError.style.display = 'block';
