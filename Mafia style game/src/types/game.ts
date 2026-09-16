@@ -102,13 +102,22 @@ export interface RoomState {
   lastEliminatedPlayer?: {
     id: string;
     name: string;
-    role: Role;
+    role?: Role;
     team?: Team;
+    category?: 'KILLERS' | 'VILLAGERS';
     reason: string;
     timestamp?: string;
   };
   lastVoteOutcome?: {
     type: 'ELIMINATED' | 'TIE' | 'ABSTAIN';
+    message: string;
+    timestamp?: string;
+  };
+  lastNightOutcome?: {
+    noDeaths: boolean;
+    savedByDoctor?: boolean;
+    victimName?: string;
+    category?: 'KILLERS' | 'VILLAGERS';
     message: string;
     timestamp?: string;
   };
@@ -155,13 +164,22 @@ export interface ClientRoomState {
   lastEliminatedPlayer?: {
     id: string;
     name: string;
-    role: Role;
+    role?: Role;
     team?: Team;
+    category?: 'KILLERS' | 'VILLAGERS';
     reason: string;
     timestamp?: string;
   };
   lastVoteOutcome?: {
     type: 'ELIMINATED' | 'TIE' | 'ABSTAIN';
+    message: string;
+    timestamp?: string;
+  };
+  lastNightOutcome?: {
+    noDeaths: boolean;
+    savedByDoctor?: boolean;
+    victimName?: string;
+    category?: 'KILLERS' | 'VILLAGERS';
     message: string;
     timestamp?: string;
   };

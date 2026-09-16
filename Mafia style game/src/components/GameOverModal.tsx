@@ -86,43 +86,41 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ roomState, onReset
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-50 p-3 sm:p-4 overflow-y-auto">
-      <div className={`max-w-xl w-full bg-gradient-to-b ${bgColor} to-[#0a0e19]/98 border-2 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl space-y-4 sm:space-y-6 font-mono my-auto max-h-[92vh] overflow-y-auto relative`}>
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center z-50 p-3 sm:p-4">
+      <div className={`max-w-lg w-full bg-gradient-to-b ${bgColor} to-[#0a0e19]/98 border-2 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-2xl space-y-4 sm:space-y-5 font-mono relative`}>
         <div className="card-bracket top-left"></div>
         <div className="card-bracket top-right"></div>
         <div className="card-bracket bottom-left"></div>
         <div className="card-bracket bottom-right"></div>
         {/* Top Header */}
-        <div className="text-center space-y-2 sm:space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-0.5 sm:py-1 rounded-full bg-[#ffcc00]/10 border border-[#ffcc00]/40 text-[#ffcc00] text-[10px] sm:text-xs font-mono font-bold uppercase">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#ffcc00]/10 border border-[#ffcc00]/40 text-[#ffcc00] text-[10px] sm:text-xs font-mono font-bold uppercase">
             MATCH RESULT SUMMARY
           </div>
-          <h2 className={`text-2xl sm:text-3xl md:text-4xl font-black ${headColor} tracking-wider uppercase font-sans`}>{headline}</h2>
+          <h2 className={`text-2xl sm:text-3xl font-black ${headColor} tracking-wider uppercase font-sans`}>{headline}</h2>
           <p className="text-slate-300 text-xs font-sans leading-relaxed max-w-md mx-auto">{subline}</p>
         </div>
 
         {/* Full Match Statistics & Role Reveal */}
         <div>
-          <div className="flex items-center justify-between mb-2.5 border-b border-white/10 pb-2">
+          <div className="flex items-center justify-between mb-2 border-b border-white/10 pb-2">
             <h3 className="text-xs font-bold text-[#ffcc00] uppercase tracking-wider flex items-center gap-2">
               <Users className="w-4 h-4" /> Full Match Role Reveal ({players.length} Players)
             </h3>
             <span className="text-[10px] text-slate-400 font-mono">Day {roomState.dayNumber || 1}</span>
           </div>
 
-          <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
             {players.map((p) => {
               const role = roomState.allRolesRevealed?.[p.id]?.role || p.role;
               const isMafiaTeam = p.team === 'MAFIA' || role === 'GODFATHER' || role === 'MAFIA';
-              /* const isWildcard = role === 'WILDCARD'; */
               return (
-                <div key={p.id} className={`flex items-center justify-between p-2.5 sm:p-3 rounded-xl border text-xs gap-2 ${
+                <div key={p.id} className={`flex items-center justify-between p-2.5 rounded-xl border text-xs gap-2 ${
                   isMafiaTeam ? 'bg-red-950/50 border-red-800 text-red-200'
-                  /* : isWildcard ? 'bg-amber-950/50 border-amber-800 text-amber-200' */
                   : 'bg-emerald-950/40 border-emerald-800 text-emerald-200'
                 }`}>
-                  <div className="flex items-center gap-2.5 sm:gap-3 truncate">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center font-bold text-xs text-white shrink-0">
+                  <div className="flex items-center gap-2.5 truncate">
+                    <div className="w-7 h-7 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center font-bold text-xs text-white shrink-0">
                       {p.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="truncate">
@@ -132,9 +130,8 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ roomState, onReset
                       </span>
                     </div>
                   </div>
-                  <span className={`font-mono font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg border text-[11px] sm:text-xs shrink-0 ${
+                  <span className={`font-mono font-bold px-2 py-0.5 rounded-lg border text-[11px] shrink-0 ${
                     isMafiaTeam ? 'bg-red-900/60 border-red-700 text-red-200'
-                    /* : isWildcard ? 'bg-amber-900/60 border-amber-700 text-amber-200' */
                     : 'bg-emerald-900/60 border-emerald-700 text-emerald-200'
                   }`}>{role}</span>
                 </div>
@@ -144,17 +141,14 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ roomState, onReset
         </div>
 
         {/* Post-Game Return to Host Page Button */}
-        <div className="pt-2 border-t border-white/10 space-y-2 sm:space-y-3">
+        <div className="pt-2 border-t border-white/10 space-y-2">
           <button
             onClick={handleResetClick}
-            className="btn-primary w-full py-3 sm:py-3.5 text-xs sm:text-sm font-black flex items-center justify-center gap-2 uppercase tracking-wider shadow-xl shadow-[#ffcc00]/25"
+            className="btn-primary w-full py-3 text-xs sm:text-sm font-black flex items-center justify-center gap-2 uppercase tracking-wider shadow-xl shadow-[#ffcc00]/25"
           >
             <RotateCcw className="w-4 h-4" />
             RETURN TO HOST COMMAND PAGE
           </button>
-          <p className="text-center text-[10px] sm:text-[11px] text-slate-400 font-sans">
-            Return to the Host Command Center to configure limits and start a new match.
-          </p>
         </div>
       </div>
 

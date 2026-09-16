@@ -45,9 +45,8 @@ export const VotingModal: React.FC<VotingModalProps> = ({ roomState, onCastVote,
         <div className="flex items-center justify-between border-b border-white/10 pb-3 sm:pb-4 gap-2">
           <div>
             <h2 className="text-lg sm:text-2xl font-black text-white uppercase tracking-tight font-sans flex items-center gap-2">
-              <Target className="w-5 h-5 sm:w-6 sm:h-6 text-[#ffcc00] shrink-0" /> DAYTIME VOTING & SELECTION CHART
+              <Target className="w-5 h-5 sm:w-6 sm:h-6 text-[#ffcc00] shrink-0" /> DAYTIME TRIAL VOTING
             </h2>
-            <p className="text-[10px] sm:text-xs text-slate-400 font-mono">Live Slido-style polling graph & vote locking</p>
           </div>
           <button onClick={onClose} className="p-1.5 sm:p-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-400 hover:text-white shrink-0">
             <X className="w-4 h-4 sm:w-5 sm:h-5" />

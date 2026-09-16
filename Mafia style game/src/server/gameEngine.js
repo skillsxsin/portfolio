@@ -210,11 +210,12 @@ function castVote(room, voterId, targetPlayerId) {
   voter.hasVoted = true;
   voter.votedForId = targetPlayerId;
 
+  const targetName = targetPlayerId ? (room.players[targetPlayerId]?.name || 'Unknown') : 'Abstain';
   room.logs.push({
     id: Date.now() + '_vote_' + voterId,
     timestamp: _ts(),
-    type: 'system',
-    message: `${voter.name} cast their vote.`,
+    type: 'vote',
+    message: `🗳️ ${voter.name} locked vote for ${targetName}.`,
   });
 
   const alivePlaying = Object.values(room.players).filter((p) => p.isAlive && !p.isHost);
@@ -227,6 +228,18 @@ function resolveDayVoting(room) {
   const counts = {};
   alivePlaying.forEach((p) => { if (p.votedForId) counts[p.votedForId] = (counts[p.votedForId] || 0) + 1; });
 
+  // Log breakdown of all locked votes
+  const voteList = alivePlaying.map((p) => {
+    const targetName = p.votedForId ? (room.players[p.votedForId]?.name || 'Unknown') : 'Abstain';
+    return `${p.name} ➔ ${targetName}`;
+  });
+  room.logs.push({
+    id: Date.now() + '_vote_summary',
+    timestamp: _ts(),
+    type: 'vote',
+    message: `📊 Locked Vote Breakdown: ${voteList.join(' | ')}`,
+  });
+
   let maxV = 0, lynchId = null, isTie = false;
   Object.entries(counts).forEach(([id, v]) => {
     if (v > maxV) { maxV = v; lynchId = id; isTie = false; }
@@ -235,7 +248,7 @@ function resolveDayVoting(room) {
 
   if (isTie || !lynchId || maxV === 0) {
     const outcomeType = maxV === 0 ? 'ABSTAIN' : 'TIE';
-    const outcomeMsg = maxV === 0 ? 'All players abstained — nobody was eliminated today.' : 'Daytime vote tied — nobody was eliminated today.';
+    const outcomeMsg = maxV === 0 ? 'All players abstained — NO ONE WAS KILLED today.' : 'Daytime vote tied — NO ONE WAS KILLED today.';
     room.lastVoteOutcome = {
       type: outcomeType,
       message: outcomeMsg,
@@ -248,6 +261,11 @@ function resolveDayVoting(room) {
 
   const elim = room.players[lynchId];
   elim.isAlive = false;
+
+  // 2 categories: KILLERS (Godfather & Mafia) vs VILLAGERS (Doctor, Police, Villagers)
+  const isKiller = elim.role === 'GODFATHER' || elim.role === 'MAFIA' || elim.role === 'DIRECTOR' || elim.role === 'SHADOW' || elim.team === 'MAFIA' || elim.team === 'SHADOWS';
+  const category = isKiller ? 'KILLERS' : 'VILLAGERS';
+
   room.lastVoteOutcome = {
     type: 'ELIMINATED',
     message: `${elim.name} was eliminated by daytime vote.`,
@@ -258,29 +276,16 @@ function resolveDayVoting(room) {
     name: elim.name,
     role: elim.role,
     team: elim.team,
+    category,
     reason: 'VOTED_OUT',
     timestamp: _ts(),
   };
-
-  /* Wildcard logic commented out
-  if (elim.role === 'WILDCARD') {
-    room.winner = 'WILDCARD';
-    room.phase = 'GAME_OVER';
-    room.logs.push({
-      id: Date.now() + '_win_wildcard',
-      timestamp: _ts(),
-      type: 'elimination',
-      message: `WILDCARD VICTORY! ${elim.name} was voted out by the daytime vote and immediately won the game!`,
-    });
-    return;
-  }
-  */
 
   room.logs.push({
     id: Date.now() + '_lynch_' + elim.id,
     timestamp: _ts(),
     type: 'elimination',
-    message: `${elim.name} was eliminated by daytime vote.`,
+    message: `⚖️ ${elim.name} was eliminated by daytime vote! Revealed Alignment: [${category === 'KILLERS' ? 'KILLER (Mafia Syndicate)' : 'VILLAGER (Townsfolk)'}]`,
   });
 
   if (!_checkWin(room)) {
@@ -316,6 +321,8 @@ function submitNightAction(room, actorId, targetId) {
   const actor = room.players[actorId];
   if (!actor || !actor.isAlive || actor.isHost) throw new Error('Invalid actor.');
 
+  const isSkipAction = targetId === 'SKIP' || targetId === 'PASS' || targetId === 'NONE' || targetId === 'DELAY' || targetId === null || targetId === undefined;
+
   if (room.nightSubPhase === 'MAFIA' || room.nightSubPhase === 'SHADOWS') {
     if (actor.role !== 'GODFATHER' && actor.role !== 'MAFIA' && actor.role !== 'DIRECTOR' && actor.role !== 'SHADOW') {
       throw new Error('Only Mafia members and the Godfather act now.');
@@ -337,6 +344,24 @@ function submitNightAction(room, actorId, targetId) {
     if (actor.role !== 'DOCTOR' && actor.role !== 'GUARDIAN') throw new Error('Only the Doctor acts now.');
     const maxHeals = room.settings.doctorHeals ?? (room.settings.guardianProtections ?? 1);
     const used = actor.doctorHealsUsed ?? (actor.protectionsUsed ?? 0);
+
+    if (isSkipAction) {
+      // Delay / pass heal action without consuming quota
+      actor.nightActionCompleted = true;
+      actor.nightTargetId = null;
+      room.nightActions.doctorTarget = null;
+      room.logs.push({
+        id: Date.now() + '_doc_delay',
+        timestamp: _ts(),
+        type: 'night',
+        author: actor.id,
+        privateToPlayerId: actor.id,
+        message: '💊 [DOCTOR] You delayed your heal tonight (Quota preserved for later rounds).',
+      });
+      _advanceNight(room);
+      return room;
+    }
+
     if (used >= maxHeals) throw new Error(`Doctor protection limit reached (max ${maxHeals}).`);
     
     actor.doctorHealsUsed = used + 1;
@@ -350,6 +375,24 @@ function submitNightAction(room, actorId, targetId) {
     if (actor.role !== 'POLICE' && actor.role !== 'INVESTIGATOR') throw new Error('Only the Police acts now.');
     const maxChecks = room.settings.policeChecks ?? (room.settings.investigatorChecks ?? 1);
     const used = actor.policeChecksUsed ?? (actor.checksUsed ?? 0);
+
+    if (isSkipAction) {
+      // Delay / pass police inspection without consuming quota
+      actor.nightActionCompleted = true;
+      actor.nightTargetId = null;
+      room.nightActions.policeTarget = null;
+      room.logs.push({
+        id: Date.now() + '_police_delay',
+        timestamp: _ts(),
+        type: 'night',
+        author: actor.id,
+        privateToPlayerId: actor.id,
+        message: '🔎 [POLICE] You delayed your inspection tonight (Quota preserved for later rounds).',
+      });
+      _advanceNight(room);
+      return room;
+    }
+
     if (used >= maxChecks) throw new Error(`Police inspection quota reached (max ${maxChecks}).`);
     
     actor.policeChecksUsed = used + 1;
@@ -376,7 +419,7 @@ function _advanceNight(room) {
         id: Date.now() + '_night_doctor',
         timestamp: _ts(),
         type: 'night',
-        message: `Night Step 2: Doctor chooses a player to heal (${healsLeft} heal(s) remaining).`,
+        message: `Night Step 2: Doctor may choose a player to heal or delay (${healsLeft} heal(s) remaining).`,
       });
     } else {
       room.nightSubPhase = 'DOCTOR';
@@ -395,7 +438,7 @@ function _advanceNight(room) {
         id: Date.now() + '_night_police',
         timestamp: _ts(),
         type: 'night',
-        message: `Night Step 3: Police inspects a suspect (${checksLeft} inspection(s) remaining).`,
+        message: `Night Step 3: Police may inspect a suspect or delay (${checksLeft} inspection(s) remaining).`,
       });
     } else {
       _resolveNight(room);
@@ -432,34 +475,57 @@ function _resolveNight(room) {
   const effectiveDoctorTarget = doctorTarget || guardianTarget;
   if (killId) {
     if (killId === effectiveDoctorTarget) {
+      room.lastNightOutcome = {
+        noDeaths: true,
+        savedByDoctor: true,
+        message: 'The Doctor healed the target — NO ONE WAS KILLED tonight!',
+        timestamp: _ts(),
+      };
       room.logs.push({
         id: Date.now() + '_saved',
         timestamp: _ts(),
         type: 'night',
-        message: 'Dawn breaks... The Doctor healed the target from the Mafia\'s attack!',
+        message: '🌅 Dawn breaks: The Doctor healed the target — NO ONE WAS KILLED tonight!',
       });
     } else {
       const victim = room.players[killId];
       if (victim && victim.isAlive && !victim.isHost) {
+        const isKiller = victim.role === 'GODFATHER' || victim.role === 'MAFIA' || victim.role === 'DIRECTOR' || victim.role === 'SHADOW' || victim.team === 'MAFIA';
+        const category = isKiller ? 'KILLERS' : 'VILLAGERS';
+
         victim.isAlive = false;
         room.lastEliminatedPlayer = {
           id: victim.id,
           name: victim.name,
           role: victim.role,
           team: victim.team,
+          category,
           reason: 'NIGHT_ATTACK',
+          timestamp: _ts(),
+        };
+        room.lastNightOutcome = {
+          noDeaths: false,
+          victimName: victim.name,
+          category,
+          message: `${victim.name} was killed in the night!`,
           timestamp: _ts(),
         };
         room.logs.push({
           id: Date.now() + '_kill',
           timestamp: _ts(),
           type: 'elimination',
-          message: `Dawn breaks... ${victim.name} was killed in the night!`,
+          message: `🌅 Dawn breaks: ${victim.name} was killed in the night! Revealed Alignment: [${category === 'KILLERS' ? 'KILLER (Mafia Syndicate)' : 'VILLAGER (Townsfolk)'}]`,
         });
       }
     }
   } else {
-    room.logs.push({ id: Date.now() + '_quiet', timestamp: _ts(), type: 'night', message: 'A quiet night. No one was harmed.' });
+    room.lastNightOutcome = {
+      noDeaths: true,
+      savedByDoctor: false,
+      message: 'A quiet night — NO ONE WAS KILLED tonight.',
+      timestamp: _ts(),
+    };
+    room.logs.push({ id: Date.now() + '_quiet', timestamp: _ts(), type: 'night', message: '🌅 Dawn breaks: A quiet night — NO ONE WAS KILLED tonight.' });
   }
 
   // Police result — private feedback to Police only
@@ -703,6 +769,8 @@ function getSanitizedClientState(room, clientSocketId) {
     lastEliminatedPlayer: (room.lastEliminatedPlayer && !isGameOver && !isHost)
       ? { ...room.lastEliminatedPlayer, role: undefined, team: undefined }
       : room.lastEliminatedPlayer,
+    lastVoteOutcome: room.lastVoteOutcome,
+    lastNightOutcome: room.lastNightOutcome,
     winner: room.winner,
   };
 

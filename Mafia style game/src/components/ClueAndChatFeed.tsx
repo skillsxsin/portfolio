@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ClientRoomState } from '../types/game';
-import { MessageSquare, ScrollText, Lock, Send } from 'lucide-react';
+import { MessageSquare, ScrollText, Lock, Send, Download, Vote } from 'lucide-react';
 
 interface ClueAndChatFeedProps {
   roomState: ClientRoomState;
@@ -36,6 +36,36 @@ export const ClueAndChatFeed: React.FC<ClueAndChatFeedProps> = ({
     setMafiaInput('');
   };
 
+  const downloadMatchLogs = () => {
+    const lines = [
+      `=======================================================`,
+      `HIDDEN AGENDA - MATCH LOGS (ROOM: ${roomState.code})`,
+      `Exported: ${new Date().toLocaleString()}`,
+      `Total Players: ${Object.keys(roomState.players).length}`,
+      `=======================================================\n`,
+      `[SYSTEM & VOTING EVENTS]`,
+    ];
+
+    roomState.logs.forEach((log) => {
+      lines.push(`[${log.timestamp}] [${log.type.toUpperCase()}] ${log.author ? `${log.author}: ` : ''}${log.message}`);
+    });
+
+    if (isMafiaOrHost && (roomState.mafiaLogs || roomState.shadowLogs)) {
+      lines.push(`\n[MAFIA SYNDICATE PRIVATE TRANSCRIPT]`);
+      (roomState.mafiaLogs || roomState.shadowLogs || []).forEach((m) => {
+        lines.push(`[${m.timestamp}] ${m.author}: ${m.message}`);
+      });
+    }
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `hidden-agenda-logs-${roomState.code}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const chatLogs = roomState.logs.filter((l) => l.type === 'chat');
   const systemLogs = roomState.logs.filter((l) => l.type !== 'chat');
   const mafiaLogs = roomState.mafiaLogs || roomState.shadowLogs || [];
@@ -43,25 +73,38 @@ export const ClueAndChatFeed: React.FC<ClueAndChatFeedProps> = ({
   return (
     <div className="card-panel flex flex-col h-[380px] sm:h-[440px] border-white/20">
       {/* Tabs */}
-      <div className="flex items-center gap-1.5 sm:gap-2 border-b border-white/15 pb-2 sm:pb-2.5 mb-2.5 sm:mb-3 flex-wrap font-mono">
-        {([
-          { key: 'chat', icon: <MessageSquare className="w-3.5 h-3.5" />, label: 'Room Chat' },
-          { key: 'log',  icon: <ScrollText    className="w-3.5 h-3.5" />, label: 'Match Log' },
-        ] as { key: 'chat' | 'log'; icon: React.ReactNode; label: string }[]).map(({ key, icon, label }) => (
-          <button key={key} onClick={() => setTab(key)}
-            className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all ${
-              tab === key ? 'bg-[#ffcc00]/20 text-[#ffcc00] border border-[#ffcc00]/50' : 'text-slate-300 hover:text-white'
-            }`}>
-            {icon} {label}
-          </button>
-        ))}
+      <div className="flex items-center justify-between gap-1.5 sm:gap-2 border-b border-white/15 pb-2 sm:pb-2.5 mb-2.5 sm:mb-3 flex-wrap font-mono">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {([
+            { key: 'chat', icon: <MessageSquare className="w-3.5 h-3.5" />, label: 'Room Chat' },
+            { key: 'log',  icon: <ScrollText    className="w-3.5 h-3.5" />, label: 'Match Log' },
+          ] as { key: 'chat' | 'log'; icon: React.ReactNode; label: string }[]).map(({ key, icon, label }) => (
+            <button key={key} onClick={() => setTab(key)}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all ${
+                tab === key ? 'bg-[#ffcc00]/20 text-[#ffcc00] border border-[#ffcc00]/50' : 'text-slate-300 hover:text-white'
+              }`}>
+              {icon} {label}
+            </button>
+          ))}
 
-        {isMafiaOrHost && (
-          <button onClick={() => setTab('mafia')}
-            className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-xl flex items-center gap-1.5 border transition-all ${
-              tab === 'mafia' ? 'bg-red-950 text-red-300 border-red-700 ring-1 ring-red-500' : 'bg-red-950/40 text-red-400 border-red-900/60 hover:bg-red-950'
-            }`}>
-            <Lock className="w-3.5 h-3.5" /> Mafia Chat
+          {isMafiaOrHost && (
+            <button onClick={() => setTab('mafia')}
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 text-[11px] sm:text-xs font-bold rounded-xl flex items-center gap-1.5 border transition-all ${
+                tab === 'mafia' ? 'bg-red-950 text-red-300 border-red-700 ring-1 ring-red-500' : 'bg-red-950/40 text-red-400 border-red-900/60 hover:bg-red-950'
+              }`}>
+              <Lock className="w-3.5 h-3.5" /> Mafia Chat
+            </button>
+          )}
+        </div>
+
+        {tab === 'log' && (
+          <button
+            onClick={downloadMatchLogs}
+            title="Download full match log file (.txt)"
+            className="p-1 sm:px-2 sm:py-1 text-[10px] font-mono font-bold bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/15 rounded-lg flex items-center gap-1"
+          >
+            <Download className="w-3 h-3 text-[#ffcc00]" />
+            <span className="hidden sm:inline">Export .txt</span>
           </button>
         )}
       </div>
@@ -95,6 +138,7 @@ export const ClueAndChatFeed: React.FC<ClueAndChatFeedProps> = ({
           {systemLogs.map((log) => (
             <div key={log.id} className={`p-2.5 rounded-xl border ${
               log.type === 'elimination' ? 'bg-red-950/60 border-red-800 text-red-200 font-bold'
+              : log.type === 'vote'      ? 'bg-amber-950/40 border-amber-800/80 text-amber-200'
               : log.type === 'night'     ? 'bg-purple-950/60 border-purple-800 text-purple-200'
               : 'bg-[#0f172a]/70 border-white/20 text-slate-200'
             }`}>

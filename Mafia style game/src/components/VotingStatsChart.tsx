@@ -84,12 +84,9 @@ export const VotingStatsChart: React.FC<VotingStatsChartProps> = ({ roomState })
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-[#ffcc00]" />
           </div>
           <div>
-            <h3 className="text-base sm:text-xl font-black text-white uppercase tracking-tight font-sans">
-              Who should be eliminated today?
+            <h3 className="text-base sm:text-lg font-black text-white uppercase tracking-tight font-sans">
+              Daytime Vote Breakdown
             </h3>
-            <p className="text-[10px] sm:text-xs text-slate-300 font-mono flex items-center gap-1.5 mt-0.5">
-              <Flame className="w-3.5 h-3.5 text-red-400" /> Live Polling Bar Chart & Locked Voters
-            </p>
           </div>
         </div>
 
@@ -101,22 +98,22 @@ export const VotingStatsChart: React.FC<VotingStatsChartProps> = ({ roomState })
         </div>
       </div>
 
-      {/* Vertical Bar Graph Section (Matching Slido Mockup) */}
-      <div className="bg-[#0f172a]/70 border border-white/20 rounded-2xl sm:rounded-3xl p-3 sm:p-6 md:p-8 space-y-4 shadow-inner">
-        <div className="h-72 sm:h-80 md:h-84 flex items-end justify-around gap-2 sm:gap-4 md:gap-6 pt-16 sm:pt-20 pb-3 px-1 sm:px-2 overflow-x-auto scrollbar-thin">
+      {/* Vertical Bar Graph Section */}
+      <div className="bg-[#0f172a]/70 border border-white/20 rounded-2xl sm:rounded-3xl p-3 sm:p-6 space-y-4 shadow-inner">
+        <div className="h-64 sm:h-72 flex items-end justify-around gap-2 sm:gap-4 pt-12 sm:pt-14 pb-2 px-1 overflow-x-auto">
           {candidateTargets.map((item, index) => {
             const colorClass = BAR_COLORS[index % BAR_COLORS.length];
             return (
-              <div key={item.id} className="flex-1 flex flex-col items-center h-full justify-end min-w-[64px] sm:min-w-[80px] max-w-[110px] sm:max-w-[140px] group">
+              <div key={item.id} className="flex-1 flex flex-col items-center h-full justify-end min-w-[64px] sm:min-w-[76px] max-w-[110px] group">
                 {/* Floating Locked & Selecting Badges UI Element above graph */}
-                <div className="mb-2 flex flex-col items-center gap-0.5 sm:gap-1 max-w-full z-10">
+                <div className="mb-2 flex flex-col items-center gap-0.5 max-w-full z-10">
                   {/* Locked Voters Badges */}
                   {item.lockedVoters.map((voter, vIdx) => (
                     <span
                       key={`locked_${vIdx}`}
-                      className="bg-emerald-950/90 border border-emerald-500 text-emerald-300 text-[8px] sm:text-[10px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg shadow-emerald-500/20 tracking-wider truncate max-w-[85px] sm:max-w-[120px]"
+                      className="bg-emerald-950/90 border border-emerald-500 text-emerald-300 text-[8px] sm:text-[9px] font-black px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg tracking-wider truncate max-w-[85px] sm:max-w-[110px]"
                     >
-                      <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400 shrink-0" /> {voter}
+                      <Lock className="w-2.5 h-2.5 text-emerald-400 shrink-0" /> {voter}
                     </span>
                   ))}
 
@@ -124,15 +121,15 @@ export const VotingStatsChart: React.FC<VotingStatsChartProps> = ({ roomState })
                   {item.pendingVoters.map((voter, pIdx) => (
                     <span
                       key={`pending_${pIdx}`}
-                      className="bg-[#ffcc00]/20 border border-[#ffcc00]/50 text-[#ffcc00] text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 animate-pulse shadow truncate max-w-[80px] sm:max-w-[110px]"
+                      className="bg-[#ffcc00]/20 border border-[#ffcc00]/50 text-[#ffcc00] text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-1 animate-pulse shadow truncate max-w-[80px] sm:max-w-[100px]"
                     >
-                      <MousePointerClick className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#ffcc00] shrink-0" /> {voter}
+                      <MousePointerClick className="w-2.5 h-2.5 text-[#ffcc00] shrink-0" /> {voter}
                     </span>
                   ))}
                 </div>
 
-                {/* Big Count Number right above the bar top */}
-                <div className="text-xl sm:text-2xl md:text-3xl font-black text-white font-mono mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform">
+                {/* Count Number */}
+                <div className="text-xl sm:text-2xl font-black text-white font-mono mb-1 group-hover:scale-110 transition-transform">
                   {item.count}
                 </div>
 
@@ -147,7 +144,7 @@ export const VotingStatsChart: React.FC<VotingStatsChartProps> = ({ roomState })
                 </div>
 
                 {/* Player Candidate Name Below Bar */}
-                <div className="mt-2 sm:mt-3 text-center w-full">
+                <div className="mt-2 text-center w-full">
                   <span className="font-extrabold text-[11px] sm:text-xs text-slate-200 font-sans flex items-center justify-center gap-1 truncate max-w-full">
                     <span>{item.avatarEmoji}</span>
                     <span className="truncate">{item.name}</span>
@@ -159,11 +156,11 @@ export const VotingStatsChart: React.FC<VotingStatsChartProps> = ({ roomState })
         </div>
       </div>
 
-      {/* Live Vote Connections Matrix */}
+      {/* Live Votes */}
       {voteLinks.length > 0 && (
-        <div className="pt-2 border-t border-white/10 space-y-3 font-mono">
+        <div className="pt-2 border-t border-white/10 space-y-2 font-mono">
           <h4 className="text-xs font-bold text-[#ffcc00] uppercase tracking-wider flex items-center gap-2">
-            <Users className="w-4 h-4 text-emerald-400" /> Live Vote Connections Matrix
+            <Users className="w-4 h-4 text-emerald-400" /> Live Votes
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
             {voteLinks.map((link, idx) => (
