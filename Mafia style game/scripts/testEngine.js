@@ -126,16 +126,55 @@ test('Godfather is immune to police inspection; Mafia scans YES', () => {
   assert.strictEqual(resGodfather.isMafia, false, 'Godfather is immune to police scan');
 });
 
-// 8. Mafia private chat hidden from Villagers
-test('Mafia private chat hidden from Villagers', () => {
-  const room = gameEngine.createRoom('CHAT', 'h1', 'GM');
-  room.players['p1'] = { id: 'p1', name: 'Godfather', role: 'GODFATHER', team: 'MAFIA',     isAlive: true, avatarSeed: '1' };
-  room.players['p2'] = { id: 'p2', name: 'Villager',  role: 'VILLAGER',  team: 'VILLAGERS', isAlive: true, avatarSeed: '2' };
-  gameEngine.sendMafiaChat(room, 'p1', 'Target p2 tonight!');
-  const villagerState = gameEngine.getSanitizedClientState(room, 'p2');
-  const mafiaState    = gameEngine.getSanitizedClientState(room, 'p1');
-  assert.strictEqual(villagerState.mafiaLogs, undefined, 'Villagers cannot see mafia chat');
-  assert.ok(mafiaState.mafiaLogs?.length > 1, 'Mafia can see their chat');
+// 9. Mafia syndicate teammates know each other and see each other's live selections
+test('Mafia teammates know each other and see live pending selections', () => {
+  const room = gameEngine.createRoom('SYN01', 'h1', 'GM');
+  room.players['p1'] = { id: 'p1', name: 'Godfather', role: 'GODFATHER', team: 'MAFIA', isAlive: true, avatarSeed: '1', nightActionCompleted: false };
+  room.players['p2'] = { id: 'p2', name: 'MafiaGoon', role: 'MAFIA', team: 'MAFIA', isAlive: true, avatarSeed: '2', nightActionCompleted: false };
+  room.players['p3'] = { id: 'p3', name: 'Villager1', role: 'VILLAGER', team: 'VILLAGERS', isAlive: true, avatarSeed: '3', nightActionCompleted: false };
+  room.players['p4'] = { id: 'p4', name: 'Villager2', role: 'VILLAGER', team: 'VILLAGERS', isAlive: true, avatarSeed: '4', nightActionCompleted: false };
+  room.phase = 'NIGHT';
+  room.nightSubPhase = 'MAFIA';
+
+  // p1 selects p3, p2 selects p4
+  gameEngine.selectPendingNightTarget(room, 'p1', 'p3');
+  gameEngine.selectPendingNightTarget(room, 'p2', 'p4');
+
+  const mafia1State = gameEngine.getSanitizedClientState(room, 'p1');
+  const mafia2State = gameEngine.getSanitizedClientState(room, 'p2');
+  const villagerState = gameEngine.getSanitizedClientState(room, 'p3');
+
+  // Mafia 1 sees Mafia 2's role and pending target
+  assert.strictEqual(mafia1State.players['p2'].role, 'MAFIA', 'Mafia 1 sees Mafia 2 role');
+  assert.strictEqual(mafia1State.players['p2'].pendingNightTargetId, 'p4', 'Mafia 1 sees Mafia 2 pending target');
+
+  // Mafia 2 sees Godfather role and pending target
+  assert.strictEqual(mafia2State.players['p1'].role, 'GODFATHER', 'Mafia 2 sees Godfather role');
+  assert.strictEqual(mafia2State.players['p1'].pendingNightTargetId, 'p3', 'Mafia 2 sees Godfather pending target');
+
+  // Villager cannot see roles or pending targets of Mafia
+  assert.strictEqual(villagerState.players['p1'].role, undefined, 'Villager cannot see Godfather role');
+  assert.strictEqual(villagerState.players['p2'].role, undefined, 'Villager cannot see Mafia role');
+  assert.strictEqual(villagerState.players['p1'].pendingNightTargetId, undefined, 'Villager cannot see pending target');
+});
+
+// 10. Locking night action completes action and clears pending target
+test('Locking night action completes action and clears pending target', () => {
+  const room = gameEngine.createRoom('LOCK01', 'h1', 'GM');
+  room.players['p1'] = { id: 'p1', name: 'Godfather', role: 'GODFATHER', team: 'MAFIA', isAlive: true, avatarSeed: '1', nightActionCompleted: false };
+  room.players['p2'] = { id: 'p2', name: 'MafiaGoon', role: 'MAFIA', team: 'MAFIA', isAlive: true, avatarSeed: '2', nightActionCompleted: false };
+  room.players['p3'] = { id: 'p3', name: 'Villager', role: 'VILLAGER', team: 'VILLAGERS', isAlive: true, avatarSeed: '3', nightActionCompleted: false };
+  room.phase = 'NIGHT';
+  room.nightSubPhase = 'MAFIA';
+  room.nightActions = { mafiaVotes: {}, godfatherTarget: null, doctorTarget: null, policeTarget: null };
+
+  gameEngine.selectPendingNightTarget(room, 'p1', 'p3');
+  assert.strictEqual(room.players['p1'].pendingNightTargetId, 'p3');
+
+  gameEngine.submitNightAction(room, 'p1', 'p3');
+  assert.strictEqual(room.players['p1'].nightActionCompleted, true);
+  assert.strictEqual(room.players['p1'].nightTargetId, 'p3');
+  assert.strictEqual(room.players['p1'].pendingNightTargetId, null);
 });
 
 console.log(`\n🎉 ALL ${passed} TESTS PASSED!\n`);

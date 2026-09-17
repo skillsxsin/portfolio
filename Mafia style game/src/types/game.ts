@@ -24,6 +24,7 @@ export interface Player {
   pendingVoteTargetId?: string | null;
   nightActionCompleted?: boolean;
   nightTargetId?: string | null;
+  pendingNightTargetId?: string | null;
   protectionsUsed?: number;
   checksUsed?: number;
   doctorHealsUsed?: number;
@@ -136,6 +137,7 @@ export interface ClientPlayer {
   pendingVoteTargetId?: string | null;
   nightActionCompleted?: boolean;
   nightTargetId?: string | null;
+  pendingNightTargetId?: string | null;
   avatarSeed: string;
   avatarEmoji?: string;
   isOnline?: boolean;

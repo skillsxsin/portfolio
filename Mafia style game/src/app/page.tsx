@@ -28,6 +28,7 @@ export default function Home() {
     updateSettings,
     startGame,
     selectPendingVote,
+    selectPendingNightTarget,
     castVote,
     submitNightAction,
     sendChat,
@@ -131,7 +132,9 @@ export default function Home() {
             onResetToLobby={() => hostResetToLobby(roomState.code)}
           />
 
-          {!roomState.myPlayer?.isHost && <PrivateRoleCard player={roomState.myPlayer} />}
+          {!roomState.myPlayer?.isHost && (
+            <PrivateRoleCard player={roomState.myPlayer} players={roomState.players} />
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
@@ -140,6 +143,7 @@ export default function Home() {
                 onSelectPendingVote={(id) => selectPendingVote(roomState.code, id)}
                 onCastVote={(id) => castVote(roomState.code, id)}
                 onNightAction={(id) => submitNightAction(roomState.code, id)}
+                onSelectPendingNightTarget={(id) => selectPendingNightTarget(roomState.code, id)}
               />
             </div>
             <div>
@@ -156,6 +160,7 @@ export default function Home() {
           <RoleActionModal
             roomState={roomState}
             onNightAction={(targetId) => submitNightAction(roomState.code, targetId)}
+            onSelectPendingNightTarget={(targetId) => selectPendingNightTarget(roomState.code, targetId)}
           />
 
           <VotingModal

@@ -178,6 +178,9 @@ export function useSocket() {
                 } else if (msg.type === 'select_pending_vote') {
                   gameEngine.selectPendingVote(currentRoom, peerId, msg.targetPlayerId);
                   broadcastP2P();
+                } else if (msg.type === 'select_pending_night_target') {
+                  gameEngine.selectPendingNightTarget(currentRoom, peerId, msg.targetPlayerId);
+                  broadcastP2P();
                 } else if (msg.type === 'submit_night_action') {
                   gameEngine.submitNightAction(currentRoom, peerId, msg.targetPlayerId);
                   broadcastP2P();
@@ -254,6 +257,7 @@ export function useSocket() {
         else if (event === 'update_settings') room.settings = { ...room.settings, ...data.settings };
         else if (event === 'cast_vote') gameEngine.castVote(room, 'host', data.targetPlayerId);
         else if (event === 'select_pending_vote') gameEngine.selectPendingVote(room, 'host', data.targetPlayerId);
+        else if (event === 'select_pending_night_target') gameEngine.selectPendingNightTarget(room, 'host', data.targetPlayerId);
         else if (event === 'submit_night_action') gameEngine.submitNightAction(room, 'host', data.targetPlayerId);
         else if (event === 'send_chat') {
           room.logs.push({ id: Date.now() + '_chat', timestamp: new Date().toLocaleTimeString(), type: 'chat', author: room.players['host']?.name || 'GM', message: data.message });
@@ -292,6 +296,7 @@ export function useSocket() {
     updateSettings: (code: string, settings: any) => emit('update_settings', { code, settings }),
     startGame: (code: string, cb?: any) => emit('start_game', { code }),
     selectPendingVote: (code: string, targetPlayerId: string | null) => emit('select_pending_vote', { code, targetPlayerId }),
+    selectPendingNightTarget: (code: string, targetPlayerId: string | null) => emit('select_pending_night_target', { code, targetPlayerId }),
     castVote: (code: string, targetPlayerId: string | null, cb?: any) => emit('cast_vote', { code, targetPlayerId }, cb),
     submitNightAction: (code: string, targetPlayerId: string, cb?: any) => emit('submit_night_action', { code, targetPlayerId }, cb),
     sendChat: (code: string, message: string) => emit('send_chat', { code, message }),

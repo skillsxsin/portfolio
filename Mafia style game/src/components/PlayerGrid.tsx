@@ -10,9 +10,10 @@ interface PlayerGridProps {
   onCastVote: (targetId: string | null) => void;
   onSelectPendingVote?: (targetId: string | null) => void;
   onNightAction: (targetId: string) => void;
+  onSelectPendingNightTarget?: (targetId: string | null) => void;
 }
 
-export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, onSelectPendingVote, onNightAction }) => {
+export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, onSelectPendingVote, onNightAction, onSelectPendingNightTarget }) => {
   const players     = Object.values(roomState.players).filter((p) => !p.isHost);
   const myPlayer    = roomState.myPlayer;
   const isVoting    = roomState.phase === 'DAY_VOTING';
@@ -26,6 +27,10 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
   const isDoctorTurn = subPhase === 'DOCTOR' && myPlayer?.role === 'DOCTOR';
   const isPoliceTurn = subPhase === 'POLICE' && myPlayer?.role === 'POLICE';
   const canAct       = isNight && myPlayer?.isAlive && !myPlayer?.isHost && (isMafiaTurn || isDoctorTurn || isPoliceTurn) && !myPlayer?.nightActionCompleted;
+
+  const mafiaTeammates = Object.values(roomState.players).filter(
+    (p) => !p.isHost && (p.team === 'MAFIA' || p.role === 'GODFATHER' || p.role === 'MAFIA')
+  );
 
   const nightStatusMsg = () => {
     if (!isNight) return null;
@@ -151,7 +156,17 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
             const isSelected  = selectedVoteTargetId === p.id;
             const nightTarget = myPlayer?.nightTargetId === p.id;
             const showVote    = isVoting && myPlayer?.isAlive && !myPlayer?.isHost && !myPlayer?.hasVoted && p.isAlive && !isMe;
-            const showNight   = canAct && p.isAlive && !isMe;
+            const isTeammate  = isMafiaTurn && (p.team === 'MAFIA' || p.role === 'GODFATHER' || p.role === 'MAFIA');
+            const showNight   = canAct && p.isAlive && !isMe && !isTeammate;
+
+            // Find any mafia teammate targeting this player during night
+            const targetingTeammates = isMafiaTurn
+              ? mafiaTeammates.filter((tm) => {
+                  if (tm.id === myPlayer?.id) return false;
+                  const targetId = tm.nightActionCompleted ? tm.nightTargetId : tm.pendingNightTargetId;
+                  return targetId === p.id;
+                })
+              : [];
 
             return (
               <div key={p.id} className={`rounded-2xl p-4 border flex flex-col gap-3 transition-all ${
@@ -169,13 +184,28 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
                       {p.avatarEmoji || '👾'}
                     </div>
                     <div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-extrabold text-sm text-white block">{p.name}{isMe ? ' (You)' : ''}</span>
                         <span className={`w-2 h-2 rounded-full inline-block ${p.isOnline !== false ? 'bg-emerald-400 shadow-sm shadow-emerald-400' : 'bg-slate-500'}`} title={p.isOnline !== false ? 'Online' : 'Offline'} />
                       </div>
-                      {!p.isAlive
-                        ? <span className="text-red-400 text-xs flex items-center gap-1 font-mono"><Skull className="w-3 h-3" /> ELIMINATED</span>
-                        : <span className="text-emerald-400 text-xs font-mono font-semibold flex items-center gap-1"><span className="text-[10px]">{p.isOnline !== false ? '🟢 ONLINE' : '🔴 OFFLINE'}</span></span>}
+                      <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                        {!p.isAlive
+                          ? <span className="text-red-400 text-xs flex items-center gap-1 font-mono"><Skull className="w-3 h-3" /> ELIMINATED</span>
+                          : <span className="text-emerald-400 text-xs font-mono font-semibold flex items-center gap-1"><span className="text-[10px]">{p.isOnline !== false ? '🟢 ONLINE' : '🔴 OFFLINE'}</span></span>}
+                        
+                        {/* Revealed / Teammate Role Badge */}
+                        {p.role && (
+                          <span className={`text-[9px] font-mono font-black px-1.5 py-0.2 rounded uppercase tracking-wider border ${
+                            p.role === 'GODFATHER' ? 'bg-purple-950/90 text-purple-200 border-purple-500 shadow-sm shadow-purple-900/50' :
+                            p.role === 'MAFIA' ? 'bg-red-950/90 text-red-200 border-red-500 shadow-sm shadow-red-900/50' :
+                            p.role === 'DOCTOR' ? 'bg-emerald-950/90 text-emerald-200 border-emerald-500' :
+                            p.role === 'POLICE' ? 'bg-blue-950/90 text-blue-200 border-blue-500' :
+                            'bg-slate-800/90 text-slate-200 border-slate-600'
+                          }`}>
+                            {p.role === 'GODFATHER' ? '👑 GODFATHER' : p.role === 'MAFIA' ? '🕶️ MAFIA' : p.role}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -186,6 +216,28 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
                     </span>
                   )}
                 </div>
+
+                {/* Teammates night targeting indicators on this player */}
+                {targetingTeammates.length > 0 && (
+                  <div className="flex flex-wrap gap-1 bg-black/50 p-1.5 rounded-lg border border-red-900/40">
+                    {targetingTeammates.map((tm) => {
+                      const isLocked = tm.nightActionCompleted;
+                      return (
+                        <span
+                          key={tm.id}
+                          className={`text-[9px] px-1.5 py-0.5 rounded font-black flex items-center gap-1 ${
+                            isLocked
+                              ? 'bg-emerald-950 text-emerald-300 border border-emerald-600'
+                              : 'bg-red-950 text-red-300 border border-red-600 animate-pulse'
+                          }`}
+                        >
+                          {isLocked ? <Lock className="w-2.5 h-2.5" /> : '🎯'}
+                          <span>{tm.name} {isLocked ? 'locked' : 'targeting'}</span>
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Vote Selection button */}
                 {showVote && (

@@ -166,6 +166,14 @@ app.prepare().then(() => {
       } catch (e) { if (cb) cb({ success: false, error: e.message }); }
     });
 
+    socket.on('select_pending_night_target', ({ code, targetPlayerId }) => {
+      const room = findRoom(code);
+      if (room) {
+        gameEngine.selectPendingNightTarget(room, socket.id, targetPlayerId);
+        broadcast(room.code);
+      }
+    });
+
     socket.on('submit_night_action', ({ code, targetPlayerId }, cb) => {
       try {
         const room = findRoom(code);

@@ -161,8 +161,10 @@ function startGame(room) {
       team,
       hasVoted: false,
       votedForId: null,
+      pendingVoteTargetId: null,
       nightActionCompleted: false,
       nightTargetId: null,
+      pendingNightTargetId: null,
       protectionsUsed: 0,
       checksUsed: 0,
       doctorHealsUsed: 0,
@@ -300,7 +302,11 @@ function _startNight(room) {
   room.phase = 'NIGHT';
   room.nightSubPhase = 'MAFIA';
   room.phaseTimeRemaining = 0; // Untimed by default
-  Object.values(room.players).forEach((p) => { p.nightActionCompleted = false; p.nightTargetId = null; });
+  Object.values(room.players).forEach((p) => {
+    p.nightActionCompleted = false;
+    p.nightTargetId = null;
+    p.pendingNightTargetId = null;
+  });
   room.nightActions = {
     mafiaVotes: {},
     godfatherTarget: null,
@@ -329,6 +335,7 @@ function submitNightAction(room, actorId, targetId) {
     }
     actor.nightActionCompleted = true;
     actor.nightTargetId = targetId;
+    actor.pendingNightTargetId = null;
     if (actor.role === 'GODFATHER' || actor.role === 'DIRECTOR') {
       room.nightActions.godfatherTarget = targetId;
     } else {
@@ -406,6 +413,7 @@ function submitNightAction(room, actorId, targetId) {
 }
 
 function _advanceNight(room) {
+  Object.values(room.players).forEach((p) => { p.pendingNightTargetId = null; });
   if (room.nightSubPhase === 'MAFIA' || room.nightSubPhase === 'SHADOWS') {
     const aliveDoctor = Object.values(room.players).find((p) => p.isAlive && !p.isHost && (p.role === 'DOCTOR' || p.role === 'GUARDIAN'));
     const maxHeals = room.settings.doctorHeals ?? (room.settings.guardianProtections ?? 1);
@@ -556,7 +564,11 @@ function _resolveNight(room) {
   }
 
   room.nightSubPhase = null;
-  Object.values(room.players).forEach((p) => { p.nightActionCompleted = false; p.nightTargetId = null; });
+  Object.values(room.players).forEach((p) => {
+    p.nightActionCompleted = false;
+    p.nightTargetId = null;
+    p.pendingNightTargetId = null;
+  });
   room.nightActions = {
     mafiaVotes: {},
     godfatherTarget: null,
@@ -706,7 +718,7 @@ function hostResetToLobby(room) {
     p.isAlive = !p.isHost;
     p.role = undefined; p.team = undefined;
     p.hasVoted = false; p.votedForId = null; p.pendingVoteTargetId = null;
-    p.nightActionCompleted = false; p.nightTargetId = null;
+    p.nightActionCompleted = false; p.nightTargetId = null; p.pendingNightTargetId = null;
     p.protectionsUsed = 0; p.checksUsed = 0;
     p.doctorHealsUsed = 0; p.policeChecksUsed = 0;
     p.policeResults = [];
@@ -735,7 +747,9 @@ function getSanitizedClientState(room, clientSocketId) {
       hasVoted: p.hasVoted,
       votedForId: p.hasVoted ? p.votedForId : undefined,
       pendingVoteTargetId: room.phase === 'DAY_VOTING' && !p.hasVoted ? p.pendingVoteTargetId : undefined,
-      nightActionCompleted: isHost ? p.nightActionCompleted : (isSelf ? p.nightActionCompleted : undefined),
+      nightActionCompleted: isHost ? p.nightActionCompleted : (isSelf || (isMafiaTeam && isMafiaTeammate) ? p.nightActionCompleted : undefined),
+      nightTargetId: (isHost || isSelf || (isMafiaTeam && isMafiaTeammate)) ? p.nightTargetId : undefined,
+      pendingNightTargetId: (isHost || isSelf || (isMafiaTeam && isMafiaTeammate)) ? p.pendingNightTargetId : undefined,
       role: (isSelf || isGameOver || isMafiaTeammate || isHost) ? p.role : undefined,
       team: (isSelf || isGameOver || isMafiaTeammate || isHost) ? p.team : undefined,
       protectionsUsed: (isSelf || isHost) ? (p.doctorHealsUsed ?? p.protectionsUsed) : undefined,
@@ -803,11 +817,30 @@ function selectPendingVote(room, clientSocketId, targetId) {
   return room;
 }
 
+function selectPendingNightTarget(room, clientSocketId, targetId) {
+  if (room.phase !== 'NIGHT') return room;
+  const player = room.players[clientSocketId];
+  if (!player || !player.isAlive || player.isHost) return room;
+  if (player.nightActionCompleted) return room;
+
+  if (room.nightSubPhase === 'MAFIA' || room.nightSubPhase === 'SHADOWS') {
+    if (player.role !== 'GODFATHER' && player.role !== 'MAFIA' && player.role !== 'DIRECTOR' && player.role !== 'SHADOW') return room;
+  } else if (room.nightSubPhase === 'DOCTOR' || room.nightSubPhase === 'GUARDIAN') {
+    if (player.role !== 'DOCTOR' && player.role !== 'GUARDIAN') return room;
+  } else if (room.nightSubPhase === 'POLICE' || room.nightSubPhase === 'INVESTIGATOR') {
+    if (player.role !== 'POLICE' && player.role !== 'INVESTIGATOR') return room;
+  }
+
+  player.pendingNightTargetId = targetId;
+  return room;
+}
+
 module.exports = {
   getRoleRecommendation,
   createRoom,
   startGame,
   selectPendingVote,
+  selectPendingNightTarget,
   castVote,
   resolveDayVoting,
   submitNightAction,

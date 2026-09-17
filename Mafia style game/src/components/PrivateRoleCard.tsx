@@ -4,7 +4,10 @@ import React from 'react';
 import { ClientPlayer } from '../types/game';
 import { Shield, Search } from 'lucide-react';
 
-interface PrivateRoleCardProps { player?: ClientPlayer; }
+interface PrivateRoleCardProps {
+  player?: ClientPlayer;
+  players?: Record<string, ClientPlayer>;
+}
 
 const ROLE_META: Record<string, { color: string; description: string; bg: string }> = {
   GODFATHER: {
@@ -27,15 +30,9 @@ const ROLE_META: Record<string, { color: string; description: string; bg: string
     color: 'text-slate-300', bg: 'border-white/10 bg-[#05070c]',
     description: 'General public. You have no special night abilities. Participate in daytime discussion, analyze behavior, and vote to eliminate suspected Mafia.',
   },
-  /* Wildcard commented out
-  WILDCARD: {
-    color: 'text-amber-300', bg: 'border-amber-500/30 bg-amber-950/20',
-    description: 'Independent. You have no team. Your goal is to get yourself removed by the daytime vote. If you are voted out by daytime vote, you immediately win!',
-  },
-  */
 };
 
-export const PrivateRoleCard: React.FC<PrivateRoleCardProps> = ({ player }) => {
+export const PrivateRoleCard: React.FC<PrivateRoleCardProps> = ({ player, players }) => {
   if (!player || !player.role) {
     return (
       <div className="card-panel mb-4 text-center text-slate-400 py-4 text-xs font-mono">
@@ -49,24 +46,66 @@ export const PrivateRoleCard: React.FC<PrivateRoleCardProps> = ({ player }) => {
   const isMafiaTeam = team === 'MAFIA';
 
   const policeLog = player.policeResults || player.investigatorResults || [];
+  const syndicateMembers = (isMafiaTeam && players)
+    ? Object.values(players).filter((p) => !p.isHost && (p.team === 'MAFIA' || p.role === 'GODFATHER' || p.role === 'MAFIA'))
+    : [];
 
   return (
     <div className={`card-panel mb-4 border ${meta.bg}`}>
-      <div className="flex flex-wrap items-start gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
         {/* Role Header & Name */}
-        <div>
+        <div className="flex-1 min-w-[260px]">
           <div className="flex items-center gap-2 flex-wrap font-mono">
             <h2 className={`text-2xl font-black tracking-wide ${meta.color}`}>{player.role}</h2>
             <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider border ${
               isMafiaTeam ? 'bg-red-950/80 text-red-300 border-red-800'
-              /* : team === 'WILDCARD' ? 'bg-amber-950/80 text-amber-300 border-amber-800' */
               : 'bg-emerald-950/80 text-emerald-300 border-emerald-800'
             }`}>
-              {isMafiaTeam ? 'Mafia Team' : 'Villagers Team'}
+              {isMafiaTeam ? 'Mafia Syndicate Team' : 'Villagers Team'}
             </span>
           </div>
           <p className="text-xs text-slate-300 mt-1 max-w-xl leading-relaxed font-sans">{meta.description}</p>
         </div>
+
+        {/* Syndicate Allies Roster for Mafia & Godfather */}
+        {isMafiaTeam && syndicateMembers.length > 0 && (
+          <div className="bg-[#05070c] border border-red-800/60 rounded-xl p-3 min-w-[240px] max-w-sm font-mono">
+            <div className="flex items-center justify-between gap-2 mb-2 pb-1 border-b border-red-900/40">
+              <span className="text-xs font-bold text-red-300 uppercase tracking-wider flex items-center gap-1.5">
+                🕶️ Syndicate Allies ({syndicateMembers.length})
+              </span>
+              <span className="text-[9px] text-slate-400">Night Partners</span>
+            </div>
+            <div className="space-y-1.5">
+              {syndicateMembers.map((m) => {
+                const isMe = m.id === player.id;
+                const isGf = m.role === 'GODFATHER';
+                return (
+                  <div
+                    key={m.id}
+                    className={`flex items-center justify-between text-xs px-2.5 py-1 rounded border font-bold ${
+                      isMe
+                        ? 'bg-red-950/40 border-red-700/60 text-white'
+                        : isGf
+                        ? 'bg-purple-950/40 border-purple-700/50 text-purple-200'
+                        : 'bg-black/60 border-red-900/50 text-red-200'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5 truncate">
+                      <span>{m.avatarEmoji || '👾'}</span>
+                      <span className="truncate">{m.name} {isMe ? '(You)' : ''}</span>
+                    </span>
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-black shrink-0 ${
+                      isGf ? 'bg-purple-900 text-purple-200 border border-purple-600' : 'bg-red-900 text-red-200 border border-red-600'
+                    }`}>
+                      {isGf ? '👑 GODFATHER' : '🕶️ MAFIA'}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Police inspection history */}
         {player.role === 'POLICE' && policeLog.length > 0 && (
