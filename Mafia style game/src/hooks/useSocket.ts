@@ -62,6 +62,11 @@ export function useSocket() {
       if (!room || room.phase === 'LOBBY' || room.phase === 'GAME_OVER') return;
       if (room.isTimerPaused) { broadcastP2P(); return; }
 
+      // Process autonomous AI bot turns with live state broadcast
+      if (gameEngine.processBotTurn) {
+        gameEngine.processBotTurn(room);
+      }
+
       if (room.phaseTimeRemaining > 0) {
         room.phaseTimeRemaining -= 1;
         if (room.phaseTimeRemaining === 0) {
@@ -260,6 +265,7 @@ export function useSocket() {
       const room = p2pHostRoomRef.current;
       if (room) {
         if (event === 'start_game') gameEngine.startGame(room);
+        else if (event === 'add_bots') gameEngine.addBots(room, data.count || 13);
         else if (event === 'update_settings') room.settings = { ...room.settings, ...data.settings };
         else if (event === 'cast_vote') gameEngine.castVote(room, 'host', data.targetPlayerId);
         else if (event === 'select_pending_vote') gameEngine.selectPendingVote(room, 'host', data.targetPlayerId);
@@ -301,6 +307,16 @@ export function useSocket() {
     setErrorMsg,
     createRoom: (playerName: string, settings: any, avatarEmoji?: string, cb?: any) => emit('create_room', { playerName, settings, avatarEmoji }, cb),
     joinRoom: (code: string, playerName: string, avatarEmoji?: string, cb?: any) => emit('join_room', { code, playerName, avatarEmoji }, cb),
+    addBots: (code: string, count?: number, cb?: any) => emit('add_bots', { code, count: count || 13 }, cb),
+    quickStartBotGame: (playerName?: string, cb?: any) => {
+      emit('create_room', { playerName: playerName || 'Game Master Alex', settings: {} }, (res: any) => {
+        if (res?.success && res.code) {
+          emit('add_bots', { code: res.code, count: 13 }, () => {
+            emit('start_game', { code: res.code }, cb);
+          });
+        }
+      });
+    },
     updateSettings: (code: string, settings: any) => emit('update_settings', { code, settings }),
     startGame: (code: string, cb?: any) => emit('start_game', { code }),
     selectPendingVote: (code: string, targetPlayerId: string | null) => emit('select_pending_vote', { code, targetPlayerId }),

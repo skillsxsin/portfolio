@@ -17,6 +17,7 @@ export interface Player {
   name: string;
   isHost: boolean;
   isAlive: boolean;
+  isBot?: boolean;
   role?: Role;
   team?: Team;
   hasVoted?: boolean;
@@ -60,10 +61,11 @@ export interface RoomSettings {
   discussionTimerSec: number;
   votingTimerSec: number;
   nightTimerSec: number;
-  doctorHeals: number;
-  policeChecks: number;
+  doctorHeals?: number;
+  policeChecks?: number;
   guardianProtections?: number;
   investigatorChecks?: number;
+  autoBotMode?: boolean;
   manualRoles?: Record<string, Role>;
 }
 
@@ -151,6 +153,7 @@ export interface ClientPlayer {
   name: string;
   isHost: boolean;
   isAlive: boolean;
+  isBot?: boolean;
   role?: Role;
   team?: Team;
   hasVoted?: boolean;

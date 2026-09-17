@@ -869,6 +869,7 @@ function getSanitizedClientState(room, clientSocketId) {
     sanitizedPlayers[id] = {
       id: p.id, name: p.name, isHost: p.isHost, isAlive: p.isAlive, avatarSeed: p.avatarSeed, avatarEmoji: p.avatarEmoji,
       isOnline: p.isOnline !== false,
+      isBot: p.isBot || false,
       hasVoted: p.hasVoted,
       votedForId: p.hasVoted ? p.votedForId : undefined,
       pendingVoteTargetId: room.phase === 'DAY_VOTING' && !p.hasVoted ? p.pendingVoteTargetId : undefined,
@@ -963,9 +964,182 @@ function selectPendingNightTarget(room, clientSocketId, targetId) {
   return room;
 }
 
+const BOT_NAMES = [
+  'Arthur (Alpha)', 'Beatrix (Bravo)', 'Cedric (Charlie)', 'Diana (Delta)',
+  'Elena (Echo)', 'Felix (Foxtrot)', 'Gideon (Golf)', 'Helena (Hotel)',
+  'Ivan (India)', 'Julia (Juliet)', 'Kaelen (Kilo)', 'Lyra (Lima)',
+  'Marcus (Mike)', 'Nora (November)', 'Oscar (Oscar)', 'Penelope (Papa)',
+  'Quinn (Quebec)', 'Roland (Romeo)', 'Sienna (Sierra)', 'Tristan (Tango)'
+];
+
+const BOT_EMOJIS = ['👾', '🤖', '👻', '🕹️', '🎮', '💀', '🗡️', '🛡️', '🕵️', '🎩', '👑', '⚡', '🕶️', '🐉', '🧙', '🎯'];
+
+const DISCUSSION_PHRASES = [
+  "Based on previous voting patterns, we should pay close attention to anyone shifting blame.",
+  "I'm innocent! Look at my vote history.",
+  "Doctor, remember to protect our key players tonight.",
+  "Police, did you get any scan results we can coordinate on?",
+  "The Mafia is trying to cause division among the villagers. Stay united!",
+  "Notice how quietly some players are behaving during this trial.",
+  "Let's focus our vote on the strongest evidence.",
+  "I trust the players who led the charge against suspected killers.",
+];
+
+function addBots(room, targetTotalCount = 13) {
+  if (room.phase !== 'LOBBY') return room;
+  const currentPlayers = Object.values(room.players).filter((p) => !p.isHost);
+  const needed = Math.max(0, targetTotalCount - currentPlayers.length);
+
+  for (let i = 0; i < needed; i++) {
+    const botIdx = currentPlayers.length + i;
+    const botId = 'bot_' + Math.random().toString(36).substring(2, 9);
+    const botName = BOT_NAMES[botIdx % BOT_NAMES.length] || `Agent ${botIdx + 1}`;
+    const botEmoji = BOT_EMOJIS[botIdx % BOT_EMOJIS.length];
+
+    room.players[botId] = {
+      id: botId,
+      name: botName,
+      isHost: false,
+      isAlive: true,
+      isBot: true,
+      isOnline: true,
+      avatarSeed: botName + '_' + botId,
+      avatarEmoji: botEmoji,
+      protectionsUsed: 0,
+      checksUsed: 0,
+      doctorHealsUsed: 0,
+      policeChecksUsed: 0,
+      policeResults: [],
+      investigatorResults: [],
+    };
+  }
+  room.logs.push({
+    id: Date.now() + '_bots_added',
+    timestamp: _ts(),
+    type: 'system',
+    message: `🤖 Added AI players. Roster now has ${Object.values(room.players).filter(p => !p.isHost).length} active players.`,
+  });
+  return room;
+}
+
+function processBotTurn(room) {
+  if (!room || room.phase === 'LOBBY' || room.phase === 'GAME_OVER' || room.isTimerPaused) return room;
+
+  const alivePlayers = Object.values(room.players).filter((p) => p.isAlive && !p.isHost);
+  const aliveBots = alivePlayers.filter((p) => p.isBot);
+  const deadBots = Object.values(room.players).filter((p) => !p.isAlive && !p.isHost && p.isBot);
+
+  // 1. Ghost predictions for dead bots
+  if (deadBots.length > 0 && !room.ghostPredictions) room.ghostPredictions = {};
+  deadBots.forEach((bot) => {
+    if (!room.ghostPredictions[bot.id]) room.ghostPredictions[bot.id] = {};
+    const pred = room.ghostPredictions[bot.id];
+
+    if (room.phase === 'NIGHT' && !pred.nightVictimGuess && alivePlayers.length > 0) {
+      const nonMafia = alivePlayers.filter((p) => p.team !== 'MAFIA');
+      const pick = (nonMafia.length > 0 ? nonMafia : alivePlayers)[Math.floor(Math.random() * (nonMafia.length > 0 ? nonMafia.length : alivePlayers.length))];
+      if (pick) pred.nightVictimGuess = pick.id;
+    }
+    if (room.phase === 'DAY_VOTING' && !pred.dayLynchGuess && alivePlayers.length > 0) {
+      const pick = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+      if (pick) pred.dayLynchGuess = pick.id;
+    }
+    if (!pred.winnerGuess) {
+      pred.winnerGuess = Math.random() > 0.5 ? 'MAFIA' : 'VILLAGERS';
+    }
+  });
+
+  // 2. NIGHT PHASE ACTIONS
+  if (room.phase === 'NIGHT') {
+    if (room.nightSubPhase === 'MAFIA' || room.nightSubPhase === 'SHADOWS') {
+      const aliveMafiaBots = aliveBots.filter((b) => b.role === 'GODFATHER' || b.role === 'MAFIA');
+      const candidates = alivePlayers.filter((p) => p.team !== 'MAFIA' && p.role !== 'GODFATHER' && p.role !== 'MAFIA');
+
+      if (candidates.length > 0) {
+        aliveMafiaBots.forEach((bot) => {
+          if (!bot.nightActionCompleted) {
+            if (!bot.pendingNightTargetId) {
+              // Select target first (signals teammate on live radar)
+              const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+              selectPendingNightTarget(room, bot.id, chosen.id);
+            } else {
+              // Lock target
+              submitNightAction(room, bot.id, bot.pendingNightTargetId);
+            }
+          }
+        });
+      }
+    } else if (room.nightSubPhase === 'DOCTOR' || room.nightSubPhase === 'GUARDIAN') {
+      const botDoctor = aliveBots.find((b) => (b.role === 'DOCTOR' || b.role === 'GUARDIAN') && !b.nightActionCompleted);
+      if (botDoctor) {
+        const maxHeals = room.settings.doctorHeals ?? 1;
+        const used = botDoctor.doctorHealsUsed ?? 0;
+        if (used < maxHeals && alivePlayers.length > 0) {
+          const chosen = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
+          submitNightAction(room, botDoctor.id, chosen.id);
+        } else {
+          submitNightAction(room, botDoctor.id, 'SKIP');
+        }
+      }
+    } else if (room.nightSubPhase === 'POLICE' || room.nightSubPhase === 'INVESTIGATOR') {
+      const botPolice = aliveBots.find((b) => (b.role === 'POLICE' || b.role === 'INVESTIGATOR') && !b.nightActionCompleted);
+      if (botPolice) {
+        const maxChecks = room.settings.policeChecks ?? 1;
+        const used = botPolice.policeChecksUsed ?? 0;
+        const inspectedIds = new Set((botPolice.policeResults || []).map((r) => r.targetName));
+        const uninspected = alivePlayers.filter((p) => p.id !== botPolice.id && !inspectedIds.has(p.name));
+
+        if (used < maxChecks && uninspected.length > 0) {
+          const chosen = uninspected[Math.floor(Math.random() * uninspected.length)];
+          submitNightAction(room, botPolice.id, chosen.id);
+        } else {
+          submitNightAction(room, botPolice.id, 'SKIP');
+        }
+      }
+    }
+  }
+
+  // 3. DAY DISCUSSION - Realistic tactical banter
+  else if (room.phase === 'DAY_DISCUSSION') {
+    if (Math.random() < 0.35 && aliveBots.length > 0) {
+      const chatter = aliveBots[Math.floor(Math.random() * aliveBots.length)];
+      const msg = DISCUSSION_PHRASES[Math.floor(Math.random() * DISCUSSION_PHRASES.length)];
+      room.logs.push({
+        id: Date.now() + '_bot_chat_' + chatter.id,
+        timestamp: _ts(),
+        type: 'chat',
+        author: chatter.name,
+        message: msg,
+      });
+    }
+  }
+
+  // 4. DAY VOTING - Two-step selection and locking
+  else if (room.phase === 'DAY_VOTING') {
+    const unvotedBots = aliveBots.filter((b) => !b.hasVoted);
+    unvotedBots.forEach((bot) => {
+      const candidates = alivePlayers.filter((p) => p.id !== bot.id);
+      if (candidates.length > 0) {
+        if (!bot.pendingVoteTargetId) {
+          // Select candidate first
+          const target = candidates[Math.floor(Math.random() * candidates.length)];
+          selectPendingVote(room, bot.id, target.id);
+        } else {
+          // Lock vote
+          castVote(room, bot.id, bot.pendingVoteTargetId);
+        }
+      }
+    });
+  }
+
+  return room;
+}
+
 module.exports = {
   getRoleRecommendation,
   createRoom,
+  addBots,
+  processBotTurn,
   startGame,
   selectPendingVote,
   selectPendingNightTarget,

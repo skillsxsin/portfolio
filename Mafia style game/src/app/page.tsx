@@ -26,6 +26,8 @@ export default function Home() {
     errorMsg,
     createRoom,
     joinRoom,
+    addBots,
+    quickStartBotGame,
     updateSettings,
     startGame,
     selectPendingVote,
@@ -102,6 +104,8 @@ export default function Home() {
               roomState={roomState}
               onCreateRoom={createRoom}
               onJoinRoom={joinRoom}
+              onAddBots={(code, count) => addBots(code, count)}
+              onQuickStartBotGame={(name) => quickStartBotGame(name)}
               onUpdateSettings={updateSettings}
               onStartGame={startGame}
               errorMsg={errorMsg}

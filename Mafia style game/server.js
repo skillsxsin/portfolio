@@ -82,8 +82,8 @@ app.prepare().then(() => {
               }
             }
             gameEngine.hostForceNextPhase && gameEngine.hostForceNextPhase(room);
-          }
-        }
+      if (room.phase !== 'LOBBY' && room.phase !== 'GAME_OVER' && !room.isTimerPaused) {
+        gameEngine.processBotTurn && gameEngine.processBotTurn(room);
       }
       broadcast(code);
     });
@@ -104,6 +104,17 @@ app.prepare().then(() => {
         socket.join(code);
         broadcast(code);
         if (cb) cb({ success: true, code });
+      } catch (e) { if (cb) cb({ success: false, error: e.message }); }
+    });
+
+    socket.on('add_bots', ({ code, count }, cb) => {
+      try {
+        const room = findRoom(code);
+        if (!room) throw new Error('Room not found.');
+        if (!room.players[socket.id]?.isHost) throw new Error('Only host can add bots.');
+        gameEngine.addBots(room, count || 13);
+        broadcast(room.code);
+        if (cb) cb({ success: true });
       } catch (e) { if (cb) cb({ success: false, error: e.message }); }
     });
 

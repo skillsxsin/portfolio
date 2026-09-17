@@ -50,12 +50,14 @@ interface LobbyProps {
   onJoinRoom: (code: string, name: string, avatarEmoji?: string) => void;
   onUpdateSettings: (code: string, settings: any) => void;
   onStartGame: (code: string) => void;
+  onAddBots?: (code: string, count?: number) => void;
+  onQuickStartBotGame?: (name?: string) => void;
   errorMsg: string | null;
   initialJoinCode?: string;
 }
 
 export const Lobby: React.FC<LobbyProps> = ({
-  roomState, onCreateRoom, onJoinRoom, onUpdateSettings, onStartGame, errorMsg, initialJoinCode = '',
+  roomState, onCreateRoom, onJoinRoom, onUpdateSettings, onStartGame, onAddBots, onQuickStartBotGame, errorMsg, initialJoinCode = '',
 }) => {
   const [hostName, setHostName] = useState('');
   const [joinName, setJoinName] = useState('');
@@ -142,14 +144,27 @@ export const Lobby: React.FC<LobbyProps> = ({
           </div>
 
           {isHost && (
-            <button
-              onClick={() => onStartGame(roomState.code)}
-              disabled={activePlayers.length < 4}
-              className="btn-primary py-3 px-8 text-sm font-extrabold flex items-center gap-2 disabled:opacity-40"
-            >
-              <Play className="w-4 h-4 fill-current" />
-              START MATCH ({activePlayers.length} Players)
-            </button>
+            <div className="flex items-center gap-2 flex-wrap">
+              {onAddBots && (
+                <button
+                  type="button"
+                  onClick={() => onAddBots(roomState.code, 13)}
+                  className="btn-secondary py-3 px-4 text-xs font-bold border-cyan-500/40 text-cyan-300 hover:bg-cyan-950/40 flex items-center gap-1.5 shadow-lg shadow-cyan-950/30"
+                  title="Adds 13 autonomous AI bots with names and avatars"
+                >
+                  <span>🤖</span> Fill with 13 AI Bots
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => onStartGame(roomState.code)}
+                disabled={activePlayers.length < 4}
+                className="btn-primary py-3 px-8 text-sm font-extrabold flex items-center gap-2 disabled:opacity-40"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                START MATCH ({activePlayers.length} Players)
+              </button>
+            </div>
           )}
         </div>
 
@@ -158,9 +173,29 @@ export const Lobby: React.FC<LobbyProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Player roster */}
           <div className="card-panel lg:col-span-2 space-y-4">
-            <h2 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2 font-mono">
-              <Users className="w-4 h-4 text-[#ffcc00]" /> Active Roster ({players.length})
-            </h2>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h2 className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2 font-mono">
+                <Users className="w-4 h-4 text-[#ffcc00]" /> Active Roster ({players.length})
+              </h2>
+              {isHost && onAddBots && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onAddBots(roomState.code, 1)}
+                    className="text-[11px] font-mono font-bold text-slate-300 hover:text-cyan-300 bg-white/5 hover:bg-white/10 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1"
+                  >
+                    <span>➕</span> Add 1 Bot
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onAddBots(roomState.code, 13)}
+                    className="text-[11px] font-mono font-bold text-cyan-400 hover:text-cyan-300 bg-cyan-950/50 hover:bg-cyan-900/50 px-2.5 py-1 rounded-lg border border-cyan-800/60 flex items-center gap-1"
+                  >
+                    <span>🤖</span> Add 13 Bots
+                  </button>
+                </div>
+              )}
+            </div>
             <div className="space-y-2">
               {players.map((p) => (
                 <div key={p.id} className={`p-3.5 rounded-xl border flex flex-wrap items-center justify-between gap-3 ${p.isHost ? 'bg-[#ffcc00]/10 border-[#ffcc00]/30' : 'bg-[#05070c] border-white/10'}`}>
@@ -169,8 +204,13 @@ export const Lobby: React.FC<LobbyProps> = ({
                       <span>{p.avatarEmoji || (p.isHost ? '👑' : '👾')}</span>
                     </div>
                     <div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-sm text-white block">{p.name}</span>
+                        {p.isBot && (
+                          <span className="text-[9px] bg-cyan-950/90 border border-cyan-600/60 text-cyan-300 font-mono px-1.5 py-0.5 rounded font-bold">
+                            🤖 AI BOT
+                          </span>
+                        )}
                         <span className={`w-2 h-2 rounded-full inline-block ${p.isOnline !== false ? 'bg-emerald-400 shadow-sm shadow-emerald-400' : 'bg-slate-500'}`} title={p.isOnline !== false ? 'Online' : 'Offline'} />
                       </div>
                       {p.isHost
@@ -337,6 +377,30 @@ export const Lobby: React.FC<LobbyProps> = ({
       </div>
 
       {errorMsg && <div className="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-xs font-semibold text-center">{errorMsg}</div>}
+
+      {/* Quick AI Game Instant Match Card */}
+      {onQuickStartBotGame && (
+        <div className="card-panel border-[#ffcc00]/40 bg-gradient-to-r from-amber-950/30 via-purple-950/20 to-cyan-950/30 p-5 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-xl shadow-black/40">
+          <div className="space-y-1 max-w-xl">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-black text-[#ffcc00] font-mono flex items-center gap-1.5 uppercase tracking-wide">
+                <Sparkles className="w-4 h-4 text-[#ffcc00]" /> ⚡ Quick AI Match (13 Autonomous Players)
+              </span>
+              <span className="text-[10px] bg-[#ffcc00]/20 text-[#ffcc00] px-2 py-0.5 rounded-full font-mono font-bold">INSTANT PLAY</span>
+            </div>
+            <p className="text-xs text-slate-300 leading-relaxed font-sans">
+              Experience the full game live on the website right now! Bots autonomously execute Night Killing (with live radar), Doctor saves, Police scans, daytime discussions with chat banter, and live voting.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => onQuickStartBotGame(hostName.trim() || 'Alex (Moderator)')}
+            className="btn-primary py-3.5 px-6 text-xs font-black tracking-wider flex items-center gap-2 shadow-lg shadow-[#ffcc00]/30 hover:scale-[1.02] active:scale-95 transition-all w-full sm:w-auto justify-center"
+          >
+            <Play className="w-4 h-4 fill-current" /> START 13-PLAYER MATCH NOW
+          </button>
+        </div>
+      )}
 
       {/* Tab Switcher (Host vs Join) */}
       <div className="max-w-5xl mx-auto space-y-4 w-full">
