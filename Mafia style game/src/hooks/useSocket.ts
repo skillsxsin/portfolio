@@ -193,6 +193,12 @@ export function useSocket() {
                 } else if (msg.type === 'send_mafia_chat' || msg.type === 'send_shadow_chat') {
                   gameEngine.sendMafiaChat(currentRoom, peerId, msg.message);
                   broadcastP2P();
+                } else if (msg.type === 'send_ghost_chat') {
+                  gameEngine.sendGhostChat(currentRoom, peerId, msg.message);
+                  broadcastP2P();
+                } else if (msg.type === 'submit_ghost_prediction') {
+                  gameEngine.submitGhostPrediction(currentRoom, peerId, { predictionType: msg.predictionType, targetId: msg.targetId, winnerTeam: msg.winnerTeam });
+                  broadcastP2P();
                 }
               });
 
@@ -263,6 +269,8 @@ export function useSocket() {
           room.logs.push({ id: Date.now() + '_chat', timestamp: new Date().toLocaleTimeString(), type: 'chat', author: room.players['host']?.name || 'GM', message: data.message });
         }
         else if (event === 'send_mafia_chat' || event === 'send_shadow_chat') gameEngine.sendMafiaChat(room, 'host', data.message);
+        else if (event === 'send_ghost_chat') gameEngine.sendGhostChat(room, 'host', data.message);
+        else if (event === 'submit_ghost_prediction') gameEngine.submitGhostPrediction(room, 'host', { predictionType: data.predictionType, targetId: data.targetId, winnerTeam: data.winnerTeam });
         else if (event === 'host_force_next_phase') gameEngine.hostForceNextPhase && gameEngine.hostForceNextPhase(room);
         else if (event === 'host_adjust_timer') gameEngine.hostAdjustTimer && gameEngine.hostAdjustTimer(room, data.seconds);
         else if (event === 'host_toggle_pause_timer') gameEngine.hostTogglePauseTimer && gameEngine.hostTogglePauseTimer(room);
@@ -302,6 +310,8 @@ export function useSocket() {
     sendChat: (code: string, message: string) => emit('send_chat', { code, message }),
     sendMafiaChat: (code: string, message: string, cb?: any) => emit('send_mafia_chat', { code, message }, cb),
     sendShadowChat: (code: string, message: string, cb?: any) => emit('send_mafia_chat', { code, message }, cb),
+    sendGhostChat: (code: string, message: string, cb?: any) => emit('send_ghost_chat', { code, message }, cb),
+    submitGhostPrediction: (code: string, predictionType: 'NIGHT_KILL' | 'DAY_VOTE' | 'WINNER', targetId?: string | null, winnerTeam?: 'MAFIA' | 'VILLAGERS' | null, cb?: any) => emit('submit_ghost_prediction', { code, predictionType, targetId, winnerTeam }, cb),
     hostForceNextPhase: (code: string) => emit('host_force_next_phase', { code }),
     hostAdjustTimer: (code: string, seconds: number) => emit('host_adjust_timer', { code, seconds }),
     hostTogglePauseTimer: (code: string) => emit('host_toggle_pause_timer', { code }),

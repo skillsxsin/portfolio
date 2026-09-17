@@ -77,6 +77,24 @@ export interface GameLogEntry {
   privateToPlayerId?: string;
 }
 
+export interface GhostPrediction {
+  nightVictimGuess?: string | null;
+  dayLynchGuess?: string | null;
+  winnerGuess?: Team | null;
+}
+
+export interface GhostScore {
+  points: number;
+  correctGuesses: number;
+  history: Array<{
+    round: number;
+    type: 'NIGHT_KILL' | 'DAY_VOTE' | 'WINNER';
+    targetName: string;
+    pointsAwarded: number;
+    timestamp: string;
+  }>;
+}
+
 export interface RoomState {
   code: string;
   phase: GamePhase;
@@ -89,11 +107,14 @@ export interface RoomState {
   logs: GameLogEntry[];
   mafiaLogs: GameLogEntry[];
   shadowLogs?: GameLogEntry[];
+  ghostLogs?: GameLogEntry[];
+  ghostPredictions?: Record<string, GhostPrediction>;
+  ghostScores?: Record<string, GhostScore>;
   nightActions: {
     mafiaVotes: Record<string, number>;
     godfatherTarget: string | null;
     doctorTarget: string | null;
-    policeTarget: string | null;
+    policeTarget: null | string;
     // Legacy aliases
     shadowVotes?: Record<string, number>;
     directorTarget?: string | null;
@@ -163,6 +184,10 @@ export interface ClientRoomState {
   logs: GameLogEntry[];
   mafiaLogs?: GameLogEntry[];
   shadowLogs?: GameLogEntry[];
+  ghostLogs?: GameLogEntry[];
+  ghostPredictions?: Record<string, GhostPrediction>;
+  ghostScores?: Record<string, GhostScore>;
+  myGhostPrediction?: GhostPrediction;
   lastEliminatedPlayer?: {
     id: string;
     name: string;

@@ -15,6 +15,7 @@ import { EliminationModal } from '../components/EliminationModal';
 import { TieVoteModal } from '../components/TieVoteModal';
 import { RoleActionModal } from '../components/RoleActionModal';
 import { VotingModal } from '../components/VotingModal';
+import { GhostPredictionCard } from '../components/GhostPredictionCard';
 import { Footer } from '../components/Footer';
 import { getAssetPath } from '../utils/assets';
 
@@ -34,6 +35,8 @@ export default function Home() {
     sendChat,
     sendMafiaChat,
     sendShadowChat,
+    sendGhostChat,
+    submitGhostPrediction,
     hostForceNextPhase,
     hostAdjustTimer,
     hostTogglePauseTimer,
@@ -136,6 +139,16 @@ export default function Home() {
             <PrivateRoleCard player={roomState.myPlayer} players={roomState.players} />
           )}
 
+          {/* Ghost Oracle Minigame for Eliminated Players & Spectators */}
+          {(!roomState.myPlayer?.isAlive || roomState.myPlayer?.isHost) && (
+            <GhostPredictionCard
+              roomState={roomState}
+              onPredictNightTarget={(targetId) => submitGhostPrediction(roomState.code, 'NIGHT_KILL', targetId, null)}
+              onPredictDayTarget={(targetId) => submitGhostPrediction(roomState.code, 'DAY_VOTE', targetId, null)}
+              onPredictWinner={(team) => submitGhostPrediction(roomState.code, 'WINNER', null, team)}
+            />
+          )}
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
               <PlayerGrid
@@ -152,6 +165,7 @@ export default function Home() {
                 onSendChat={(msg) => sendChat(roomState.code, msg)}
                 onSendMafiaChat={(msg) => sendMafiaChat(roomState.code, msg)}
                 onSendShadowChat={(msg) => sendShadowChat(roomState.code, msg)}
+                onSendGhostChat={(msg) => sendGhostChat(roomState.code, msg)}
               />
             </div>
           </div>

@@ -110,7 +110,7 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ roomState, onReset
             <span className="text-[10px] text-slate-400 font-mono">Day {roomState.dayNumber || 1}</span>
           </div>
 
-          <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-48 sm:max-h-52 overflow-y-auto pr-1">
             {players.map((p) => {
               const role = roomState.allRolesRevealed?.[p.id]?.role || p.role;
               const isMafiaTeam = p.team === 'MAFIA' || role === 'GODFATHER' || role === 'MAFIA';
@@ -139,6 +139,42 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({ roomState, onReset
             })}
           </div>
         </div>
+
+        {/* Top Ghost Oracle Champion Highlight */}
+        {(() => {
+          const topGhost = Object.entries(roomState.ghostScores || {})
+            .map(([id, score]) => ({
+              id,
+              name: roomState.players[id]?.name || 'Ghost Oracle',
+              avatarEmoji: roomState.players[id]?.avatarEmoji || '👻',
+              points: score.points,
+              correctGuesses: score.correctGuesses,
+            }))
+            .filter((g) => g.points > 0)
+            .sort((a, b) => b.points - a.points)[0];
+
+          if (!topGhost) return null;
+
+          return (
+            <div className="p-3 rounded-xl bg-purple-950/60 border border-purple-500/60 flex items-center justify-between gap-3 font-mono text-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🔮</span>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-300 block">
+                    GHOST ORACLE CHAMPION
+                  </span>
+                  <span className="font-bold text-white font-sans">
+                    {topGhost.avatarEmoji} {topGhost.name}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <span className="text-sm font-black text-[#ffcc00] block">{topGhost.points} pts</span>
+                <span className="text-[9px] text-purple-300 opacity-80">({topGhost.correctGuesses} correct predictions)</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Post-Game Return to Host Page Button */}
         <div className="pt-2 border-t border-white/10 space-y-2">

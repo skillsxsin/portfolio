@@ -113,6 +113,15 @@ function createRoom(code, hostId, hostName, settings = {}) {
       author: 'System',
       message: '🕶️ Private Mafia channel. Coordinate here — only your team & GM can read this.',
     }],
+    ghostLogs: [{
+      id: Date.now() + '_ghost_init',
+      timestamp: _ts(),
+      type: 'system',
+      author: 'Ghost Realm',
+      message: '👻 Welcome to the Ghost Realm. Eliminated players chat here freely and play the Oracle Prediction Minigame!',
+    }],
+    ghostPredictions: {},
+    ghostScores: {},
     nightActions: {
       mafiaVotes: {},
       godfatherTarget: null,
@@ -280,6 +289,36 @@ function resolveDayVoting(room) {
     type: 'elimination',
     message: `⚖️ ${elim.name} was eliminated by daytime vote! Revealed Alignment: [${category === 'KILLERS' ? 'KILLER (Mafia Syndicate)' : 'VILLAGER (Townsfolk)'}]`,
   });
+
+  // Check ghost predictions for daytime lynch
+  if (lynchId && elim && room.ghostPredictions) {
+    if (!room.ghostScores) room.ghostScores = {};
+    Object.entries(room.ghostPredictions).forEach(([ghostId, pred]) => {
+      if (pred.dayLynchGuess === lynchId) {
+        if (!room.ghostScores[ghostId]) room.ghostScores[ghostId] = { points: 0, correctGuesses: 0, history: [] };
+        room.ghostScores[ghostId].points += 100;
+        room.ghostScores[ghostId].correctGuesses += 1;
+        room.ghostScores[ghostId].history.push({
+          round: room.dayNumber,
+          type: 'DAY_VOTE',
+          targetName: elim.name,
+          pointsAwarded: 100,
+          timestamp: _ts(),
+        });
+        const ghostPlayer = room.players[ghostId];
+        if (ghostPlayer && room.ghostLogs) {
+          room.ghostLogs.push({
+            id: Date.now() + '_gp_lynch_' + ghostId,
+            timestamp: _ts(),
+            type: 'system',
+            author: 'Ghost Oracle',
+            message: `🔮 ${ghostPlayer.name} predicted ${elim.name} would be voted out today (+100 pts)!`,
+          });
+        }
+      }
+      pred.dayLynchGuess = null;
+    });
+  }
 
   if (!_checkWin(room)) {
     room.dayNumber += 1;
@@ -516,6 +555,36 @@ function _resolveNight(room) {
           type: 'elimination',
           message: `🌅 Dawn breaks: ${victim.name} was killed in the night! Revealed Alignment: [${category === 'KILLERS' ? 'KILLER (Mafia Syndicate)' : 'VILLAGER (Townsfolk)'}]`,
         });
+
+        // Check ghost predictions for night kill
+        if (room.ghostPredictions) {
+          if (!room.ghostScores) room.ghostScores = {};
+          Object.entries(room.ghostPredictions).forEach(([ghostId, pred]) => {
+            if (pred.nightVictimGuess === victim.id) {
+              if (!room.ghostScores[ghostId]) room.ghostScores[ghostId] = { points: 0, correctGuesses: 0, history: [] };
+              room.ghostScores[ghostId].points += 100;
+              room.ghostScores[ghostId].correctGuesses += 1;
+              room.ghostScores[ghostId].history.push({
+                round: room.dayNumber,
+                type: 'NIGHT_KILL',
+                targetName: victim.name,
+                pointsAwarded: 100,
+                timestamp: _ts(),
+              });
+              const ghostPlayer = room.players[ghostId];
+              if (ghostPlayer && room.ghostLogs) {
+                room.ghostLogs.push({
+                  id: Date.now() + '_gp_kill_' + ghostId,
+                  timestamp: _ts(),
+                  type: 'system',
+                  author: 'Ghost Oracle',
+                  message: `🔮 ${ghostPlayer.name} predicted ${victim.name} would die tonight (+100 pts)!`,
+                });
+              }
+            }
+            pred.nightVictimGuess = null;
+          });
+        }
       }
     }
   } else {
@@ -589,6 +658,34 @@ function _checkWin(room) {
   const mafiaAlive = alive.filter((p) => p.team === 'MAFIA' || p.team === 'SHADOWS').length;
   const nonMafiaAlive = alive.filter((p) => p.team !== 'MAFIA' && p.team !== 'SHADOWS').length;
 
+  if (room.winner && room.ghostPredictions) {
+    if (!room.ghostScores) room.ghostScores = {};
+    Object.entries(room.ghostPredictions).forEach(([ghostId, pred]) => {
+      if (pred.winnerGuess === room.winner) {
+        if (!room.ghostScores[ghostId]) room.ghostScores[ghostId] = { points: 0, correctGuesses: 0, history: [] };
+        room.ghostScores[ghostId].points += 250;
+        room.ghostScores[ghostId].correctGuesses += 1;
+        room.ghostScores[ghostId].history.push({
+          round: room.dayNumber,
+          type: 'WINNER',
+          targetName: room.winner === 'MAFIA' ? 'Mafia Syndicate' : 'Villagers',
+          pointsAwarded: 250,
+          timestamp: _ts(),
+        });
+        const ghostPlayer = room.players[ghostId];
+        if (ghostPlayer && room.ghostLogs) {
+          room.ghostLogs.push({
+            id: Date.now() + '_gp_win_' + ghostId,
+            timestamp: _ts(),
+            type: 'system',
+            author: 'Ghost Oracle',
+            message: `🏆 ${ghostPlayer.name} predicted the winning faction (${room.winner}) (+250 pts)!`,
+          });
+        }
+      }
+    });
+  }
+
   if (mafiaAlive === 0) {
     room.winner = 'VILLAGERS';
     room.phase = 'GAME_OVER';
@@ -612,6 +709,42 @@ function _checkWin(room) {
     return true;
   }
   return false;
+}
+
+function sendGhostChat(room, playerId, message) {
+  const player = room.players[playerId];
+  if (!player) return;
+  if (player.isAlive && !player.isHost) {
+    throw new Error('Only eliminated players and Game Master can chat in the Ghost Realm.');
+  }
+  if (!room.ghostLogs) room.ghostLogs = [];
+  const entry = {
+    id: Date.now() + '_gc_' + playerId,
+    timestamp: _ts(),
+    type: 'chat',
+    author: player.name,
+    message: message.trim(),
+  };
+  room.ghostLogs.push(entry);
+  return entry;
+}
+
+function submitGhostPrediction(room, playerId, { predictionType, targetId, winnerTeam }) {
+  const player = room.players[playerId];
+  if (!player || (player.isAlive && !player.isHost)) {
+    throw new Error('Only eliminated players can submit Ghost predictions.');
+  }
+  if (!room.ghostPredictions) room.ghostPredictions = {};
+  if (!room.ghostPredictions[playerId]) room.ghostPredictions[playerId] = {};
+
+  if (predictionType === 'NIGHT_KILL') {
+    room.ghostPredictions[playerId].nightVictimGuess = targetId;
+  } else if (predictionType === 'DAY_VOTE') {
+    room.ghostPredictions[playerId].dayLynchGuess = targetId;
+  } else if (predictionType === 'WINNER') {
+    room.ghostPredictions[playerId].winnerGuess = winnerTeam;
+  }
+  return room;
 }
 
 function sendMafiaChat(room, playerId, message) {
@@ -723,6 +856,7 @@ function hostResetToLobby(room) {
 function getSanitizedClientState(room, clientSocketId) {
   const clientPlayer = room.players[clientSocketId];
   const isHost = clientPlayer?.isHost === true;
+  const isDead = clientPlayer?.isAlive === false;
   const isMafiaTeam = clientPlayer?.team === 'MAFIA' || clientPlayer?.team === 'SHADOWS';
   const isGameOver = room.phase === 'GAME_OVER';
   const policePlayer = Object.values(room.players).find((p) => (p.role === 'POLICE' || p.role === 'INVESTIGATOR') && !p.isHost);
@@ -741,8 +875,8 @@ function getSanitizedClientState(room, clientSocketId) {
       nightActionCompleted: isHost ? p.nightActionCompleted : (isSelf || (isMafiaTeam && isMafiaTeammate) ? p.nightActionCompleted : undefined),
       nightTargetId: (isHost || isSelf || (isMafiaTeam && isMafiaTeammate)) ? p.nightTargetId : undefined,
       pendingNightTargetId: (isHost || isSelf || (isMafiaTeam && isMafiaTeammate)) ? p.pendingNightTargetId : undefined,
-      role: (isSelf || isGameOver || isMafiaTeammate || isHost) ? p.role : undefined,
-      team: (isSelf || isGameOver || isMafiaTeammate || isHost) ? p.team : undefined,
+      role: (isSelf || isGameOver || isMafiaTeammate || isHost || isDead) ? p.role : undefined,
+      team: (isSelf || isGameOver || isMafiaTeammate || isHost || isDead) ? p.team : undefined,
       protectionsUsed: (isSelf || isHost) ? (p.doctorHealsUsed ?? p.protectionsUsed) : undefined,
       checksUsed: (isSelf || isHost) ? (p.policeChecksUsed ?? p.checksUsed) : undefined,
       doctorHealsUsed: (isSelf || isHost) ? (p.doctorHealsUsed ?? p.protectionsUsed) : undefined,
@@ -771,7 +905,10 @@ function getSanitizedClientState(room, clientSocketId) {
     logs: filteredLogs,
     mafiaLogs: (isMafiaTeam || isHost || isGameOver) ? (room.mafiaLogs || room.shadowLogs) : undefined,
     shadowLogs: (isMafiaTeam || isHost || isGameOver) ? (room.mafiaLogs || room.shadowLogs) : undefined,
-    lastEliminatedPlayer: (room.lastEliminatedPlayer && !isGameOver && !isHost)
+    ghostLogs: (isDead || isHost || isGameOver) ? (room.ghostLogs || []) : undefined,
+    ghostScores: (isDead || isHost || isGameOver) ? (room.ghostScores || {}) : undefined,
+    myGhostPrediction: (isDead || isHost || isGameOver) ? room.ghostPredictions?.[clientSocketId] : undefined,
+    lastEliminatedPlayer: (room.lastEliminatedPlayer && !isGameOver && !isHost && !isDead)
       ? { ...room.lastEliminatedPlayer, role: undefined, team: undefined }
       : room.lastEliminatedPlayer,
     lastVoteOutcome: room.lastVoteOutcome,
@@ -837,6 +974,8 @@ module.exports = {
   submitNightAction,
   sendMafiaChat,
   sendShadowChat,
+  sendGhostChat,
+  submitGhostPrediction,
   getSanitizedClientState,
   hostForceNextPhase,
   hostAdjustTimer,

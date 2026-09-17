@@ -178,4 +178,71 @@ test('Locking night action completes action and clears pending target', () => {
   assert.strictEqual(room.players['p1'].pendingNightTargetId, null);
 });
 
+// 11. Ghost Chat and Dead Spectator omniscient role visibility
+test('Ghost Chat and Dead Spectator omniscient role visibility', () => {
+  const room = gameEngine.createRoom('GHST01', 'h1', 'GM');
+  room.players['p1'] = { id: 'p1', name: 'DeadGuy', role: 'VILLAGER', team: 'VILLAGERS', isAlive: false, avatarSeed: '1' };
+  room.players['p2'] = { id: 'p2', name: 'SecretMafia', role: 'MAFIA', team: 'MAFIA', isAlive: true, avatarSeed: '2' };
+  room.players['p3'] = { id: 'p3', name: 'AliveVillager', role: 'VILLAGER', team: 'VILLAGERS', isAlive: true, avatarSeed: '3' };
+
+  // Dead player sends ghost chat
+  const chat = gameEngine.sendGhostChat(room, 'p1', 'Woo, spooky! I know who Mafia is!');
+  assert.ok(chat, 'Chat was added');
+  assert.strictEqual(room.ghostLogs.length, 2);
+
+  // Alive player tries to send ghost chat (should throw)
+  assert.throws(() => {
+    gameEngine.sendGhostChat(room, 'p3', 'Can I talk as a ghost?');
+  }, /Ghost Realm/);
+
+  // Sanitized state check
+  const deadState = gameEngine.getSanitizedClientState(room, 'p1');
+  const aliveState = gameEngine.getSanitizedClientState(room, 'p3');
+
+  // Dead player sees ghostLogs and secret roles
+  assert.strictEqual(deadState.ghostLogs.length, 2, 'Dead player receives ghost logs');
+  assert.strictEqual(deadState.players['p2'].role, 'MAFIA', 'Dead player sees hidden mafia role (spectator mode)');
+
+  // Alive player does not receive ghostLogs
+  assert.strictEqual(aliveState.ghostLogs, undefined, 'Alive player does not receive ghost logs');
+  assert.strictEqual(aliveState.players['p2'].role, undefined, 'Alive player cannot see secret mafia role');
+});
+
+// 12. Ghost Prediction Minigame scoring on Night Kill and Day Vote
+test('Ghost Prediction Minigame scoring on Night Kill and Day Vote', () => {
+  const room = gameEngine.createRoom('GHST02', 'h1', 'GM');
+  room.players['p1'] = { id: 'p1', name: 'DeadOracle', role: 'VILLAGER', team: 'VILLAGERS', isAlive: false, avatarSeed: '1' };
+  room.players['p2'] = { id: 'p2', name: 'MafiaGoon', role: 'MAFIA', team: 'MAFIA', isAlive: true, avatarSeed: '2', nightActionCompleted: false };
+  room.players['p3'] = { id: 'p3', name: 'Victim', role: 'VILLAGER', team: 'VILLAGERS', isAlive: true, avatarSeed: '3', nightActionCompleted: false };
+  room.players['p4'] = { id: 'p4', name: 'Innocent', role: 'VILLAGER', team: 'VILLAGERS', isAlive: true, avatarSeed: '4', nightActionCompleted: false };
+  room.players['p5'] = { id: 'p5', name: 'Innocent2', role: 'VILLAGER', team: 'VILLAGERS', isAlive: true, avatarSeed: '5', nightActionCompleted: false };
+  room.round = 1;
+  room.phase = 'NIGHT';
+  room.nightSubPhase = 'MAFIA';
+  room.nightActions = { mafiaVotes: {}, godfatherTarget: null, doctorTarget: null, policeTarget: null };
+
+  // DeadOracle predicts Victim (p3) will die tonight
+  gameEngine.submitGhostPrediction(room, 'p1', { predictionType: 'NIGHT_KILL', targetId: 'p3' });
+  assert.strictEqual(room.ghostPredictions['p1'].nightVictimGuess, 'p3');
+
+  // Mafia kills Victim (since no Doctor/Police alive, this triggers night resolution)
+  gameEngine.submitNightAction(room, 'p2', 'p3');
+
+  // DeadOracle should have received +100 points
+  assert.strictEqual(room.ghostScores['p1'].points, 100, 'Ghost received 100 points for correct Night Kill prediction');
+  assert.strictEqual(room.ghostScores['p1'].correctGuesses, 1);
+
+  // Now in DAY phase - DeadOracle predicts Innocent (p4) gets lynched
+  room.phase = 'DAY_VOTING';
+  gameEngine.submitGhostPrediction(room, 'p1', { predictionType: 'DAY_VOTE', targetId: 'p4' });
+  room.players['p2'].hasVoted = true; room.players['p2'].votedForId = 'p4';
+  room.players['p4'].hasVoted = true; room.players['p4'].votedForId = 'p4';
+  gameEngine.resolveDayVoting(room);
+
+  // DeadOracle should now have 200 points
+  assert.strictEqual(room.ghostScores['p1'].points, 200, 'Ghost received 100 points for correct Day Vote prediction');
+  assert.strictEqual(room.ghostScores['p1'].correctGuesses, 2);
+});
+
 console.log(`\n🎉 ALL ${passed} TESTS PASSED!\n`);
+

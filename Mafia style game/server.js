@@ -222,6 +222,26 @@ app.prepare().then(() => {
       } catch (e) { if (cb) cb({ success: false, error: e.message }); }
     });
 
+    socket.on('send_ghost_chat', ({ code, message }, cb) => {
+      try {
+        const room = findRoom(code);
+        if (!room || !message?.trim()) return;
+        gameEngine.sendGhostChat(room, socket.id, message);
+        broadcast(room.code);
+        if (cb) cb({ success: true });
+      } catch (e) { if (cb) cb({ success: false, error: e.message }); }
+    });
+
+    socket.on('submit_ghost_prediction', ({ code, predictionType, targetId, winnerTeam }, cb) => {
+      try {
+        const room = findRoom(code);
+        if (!room) return;
+        gameEngine.submitGhostPrediction(room, socket.id, { predictionType, targetId, winnerTeam });
+        broadcast(room.code);
+        if (cb) cb({ success: true });
+      } catch (e) { if (cb) cb({ success: false, error: e.message }); }
+    });
+
     // HOST GOD MODE
     socket.on('host_force_next_phase', ({ code }, cb) => {
       try {
