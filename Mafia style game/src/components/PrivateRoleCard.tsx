@@ -42,11 +42,11 @@ export const PrivateRoleCard: React.FC<PrivateRoleCardProps> = ({ player, player
   }
 
   const meta = ROLE_META[player.role] || { color: 'text-slate-300', bg: 'border-white/10 bg-[#05070c]', description: '' };
-  const team = player.team || 'VILLAGERS';
-  const isMafiaTeam = team === 'MAFIA';
+  const isMafiaMember = player.role === 'GODFATHER' || player.role === 'MAFIA' || player.team === 'MAFIA';
+  const isMafiaTeam = isMafiaMember;
 
   const policeLog = player.policeResults || player.investigatorResults || [];
-  const syndicateMembers = (isMafiaTeam && players)
+  const syndicateMembers = (isMafiaMember && players)
     ? Object.values(players).filter((p) => !p.isHost && (p.team === 'MAFIA' || p.role === 'GODFATHER' || p.role === 'MAFIA'))
     : [];
 
@@ -68,42 +68,58 @@ export const PrivateRoleCard: React.FC<PrivateRoleCardProps> = ({ player, player
         </div>
 
         {/* Syndicate Allies Roster for Mafia & Godfather */}
-        {isMafiaTeam && syndicateMembers.length > 0 && (
-          <div className="bg-[#05070c] border border-red-800/60 rounded-xl p-3 min-w-[240px] max-w-sm font-mono">
-            <div className="flex items-center justify-between gap-2 mb-2 pb-1 border-b border-red-900/40">
-              <span className="text-xs font-bold text-red-300 uppercase tracking-wider flex items-center gap-1.5">
-                🕶️ Syndicate Allies ({syndicateMembers.length})
+        {isMafiaMember && (
+          <div className="bg-[#05070c] border-2 border-red-700/80 rounded-2xl p-3.5 min-w-[280px] max-w-md font-mono shadow-lg shadow-red-950/40">
+            <div className="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-red-900/50">
+              <span className="text-xs font-black text-red-300 uppercase tracking-wider flex items-center gap-1.5">
+                🕶️ YOUR SYNDICATE PARTNERS ({syndicateMembers.length})
               </span>
-              <span className="text-[9px] text-slate-400">Night Partners</span>
+              <span className="text-[10px] text-amber-400 font-bold bg-amber-950/60 border border-amber-800/60 px-1.5 py-0.2 rounded">
+                SECRET ALLIES
+              </span>
             </div>
-            <div className="space-y-1.5">
-              {syndicateMembers.map((m) => {
-                const isMe = m.id === player.id;
-                const isGf = m.role === 'GODFATHER';
-                return (
-                  <div
-                    key={m.id}
-                    className={`flex items-center justify-between text-xs px-2.5 py-1 rounded border font-bold ${
-                      isMe
-                        ? 'bg-red-950/40 border-red-700/60 text-white'
-                        : isGf
-                        ? 'bg-purple-950/40 border-purple-700/50 text-purple-200'
-                        : 'bg-black/60 border-red-900/50 text-red-200'
-                    }`}
-                  >
-                    <span className="flex items-center gap-1.5 truncate">
-                      <span>{m.avatarEmoji || '👾'}</span>
-                      <span className="truncate">{m.name} {isMe ? '(You)' : ''}</span>
-                    </span>
-                    <span className={`text-[9px] px-1.5 py-0.5 rounded font-black shrink-0 ${
-                      isGf ? 'bg-purple-900 text-purple-200 border border-purple-600' : 'bg-red-900 text-red-200 border border-red-600'
-                    }`}>
-                      {isGf ? '👑 GODFATHER' : '🕶️ MAFIA'}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+            {syndicateMembers.length <= 1 ? (
+              <p className="text-[11px] text-slate-400 font-sans italic py-1">
+                You are the sole Mafia operative in this match. Strike undetected!
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {syndicateMembers.map((m) => {
+                  const isMe = m.id === player.id;
+                  const isGf = m.role === 'GODFATHER';
+                  return (
+                    <div
+                      key={m.id}
+                      className={`flex items-center justify-between text-xs px-3 py-1.5 rounded-xl border font-bold transition-all ${
+                        isMe
+                          ? 'bg-red-950/50 border-red-600/70 text-white shadow-sm'
+                          : isGf
+                          ? 'bg-purple-950/60 border-purple-600/70 text-purple-200'
+                          : 'bg-black/80 border-red-900/60 text-red-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="text-base">{m.avatarEmoji || '👾'}</span>
+                        <div className="truncate">
+                          <span className="truncate block">{m.name} {isMe ? '(You)' : ''}</span>
+                          <span className="text-[9px] text-slate-400 font-normal font-sans block">
+                            {m.isAlive ? '🟢 Alive' : '💀 Eliminated'}
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-lg font-black shrink-0 ${
+                        isGf ? 'bg-purple-900 text-purple-200 border border-purple-500 shadow-sm' : 'bg-red-900 text-red-200 border border-red-500 shadow-sm'
+                      }`}>
+                        {isGf ? '👑 GODFATHER' : '🕶️ MAFIA'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <p className="text-[10px] text-slate-400 mt-2 font-sans leading-tight border-t border-red-950/60 pt-1.5">
+              💡 Work together during Night Step 1. Coordinate target selections and communicate via the Mafia Chat tab!
+            </p>
           </div>
         )}
 

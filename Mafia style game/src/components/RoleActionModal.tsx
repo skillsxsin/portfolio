@@ -88,8 +88,8 @@ export const RoleActionModal: React.FC<RoleActionModalProps> = ({ roomState, onN
         badge: 'STEP 1: MAFIA SYNDICATE PHASE',
         icon: <Target className="w-7 h-7 sm:w-8 sm:h-8 text-red-400 animate-pulse" />,
         desc: isGodfather
-          ? 'Select a target to eliminate tonight. As Godfather, your decision has FINAL absolute precedence if there is disagreement.'
-          : 'Coordinate target selection with your Syndicate. All teammates see your real-time selections.',
+          ? 'Select a target to eliminate tonight. As Godfather, your decision has FINAL absolute precedence if there is disagreement. See what your teammates are targeting before locking.'
+          : 'Coordinate target selection with your Syndicate. All teammates see your real-time selections. Lock your selection once agreed.',
         btnColor: isGodfather ? 'bg-purple-700 hover:bg-purple-600 text-white' : 'bg-red-700 hover:bg-red-600 text-white',
         border: isGodfather ? 'border-purple-500/70' : 'border-red-500/70',
         canDelay: false,
@@ -207,6 +207,9 @@ export const RoleActionModal: React.FC<RoleActionModalProps> = ({ roomState, onN
                 );
               })}
             </div>
+            <p className="text-[10px] text-slate-400 font-sans italic pt-1 border-t border-red-950/60">
+              💡 Click any candidate below to signal your target to your partner. Check their choice above before clicking Lock!
+            </p>
           </div>
         )}
 

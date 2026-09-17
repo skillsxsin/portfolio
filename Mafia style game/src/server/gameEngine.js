@@ -857,7 +857,7 @@ function getSanitizedClientState(room, clientSocketId) {
   const clientPlayer = room.players[clientSocketId];
   const isHost = clientPlayer?.isHost === true;
   const isDead = clientPlayer?.isAlive === false;
-  const isMafiaTeam = clientPlayer?.team === 'MAFIA' || clientPlayer?.team === 'SHADOWS';
+  const isMafiaTeam = clientPlayer?.team === 'MAFIA' || clientPlayer?.team === 'SHADOWS' || clientPlayer?.role === 'GODFATHER' || clientPlayer?.role === 'MAFIA' || clientPlayer?.role === 'DIRECTOR' || clientPlayer?.role === 'SHADOW';
   const isGameOver = room.phase === 'GAME_OVER';
   const policePlayer = Object.values(room.players).find((p) => (p.role === 'POLICE' || p.role === 'INVESTIGATOR') && !p.isHost);
   const isPolice = clientSocketId === policePlayer?.id;
@@ -865,7 +865,7 @@ function getSanitizedClientState(room, clientSocketId) {
   const sanitizedPlayers = {};
   Object.entries(room.players).forEach(([id, p]) => {
     const isSelf = id === clientSocketId;
-    const isMafiaTeammate = isMafiaTeam && (p.team === 'MAFIA' || p.team === 'SHADOWS');
+    const isMafiaTeammate = isMafiaTeam && (p.team === 'MAFIA' || p.team === 'SHADOWS' || p.role === 'GODFATHER' || p.role === 'MAFIA' || p.role === 'DIRECTOR' || p.role === 'SHADOW');
     sanitizedPlayers[id] = {
       id: p.id, name: p.name, isHost: p.isHost, isAlive: p.isAlive, avatarSeed: p.avatarSeed, avatarEmoji: p.avatarEmoji,
       isOnline: p.isOnline !== false,

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClientRoomState } from '../types/game';
 import { VotingStatsChart } from './VotingStatsChart';
-import { Target, Shield, Search, Skull, CheckCircle2, AlertCircle, Lock, Ban } from 'lucide-react';
+import { Target, Shield, Search, Skull, CheckCircle2, AlertCircle, Lock, Ban, Users } from 'lucide-react';
 
 interface PlayerGridProps {
   roomState: ClientRoomState;
@@ -23,6 +23,17 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
   // Selected vote target state before locking
   const [selectedVoteTargetId, setSelectedVoteTargetId] = useState<string | null>(myPlayer?.votedForId || null);
 
+  // Selected night target state before locking
+  const [selectedNightTargetId, setSelectedNightTargetId] = useState<string | null>(myPlayer?.nightTargetId || myPlayer?.pendingNightTargetId || null);
+
+  useEffect(() => {
+    if (myPlayer?.nightTargetId) {
+      setSelectedNightTargetId(myPlayer.nightTargetId);
+    } else if (myPlayer?.pendingNightTargetId) {
+      setSelectedNightTargetId(myPlayer.pendingNightTargetId);
+    }
+  }, [myPlayer?.nightTargetId, myPlayer?.pendingNightTargetId]);
+
   const isMafiaTurn  = subPhase === 'MAFIA' && (myPlayer?.role === 'GODFATHER' || myPlayer?.role === 'MAFIA');
   const isDoctorTurn = subPhase === 'DOCTOR' && myPlayer?.role === 'DOCTOR';
   const isPoliceTurn = subPhase === 'POLICE' && myPlayer?.role === 'POLICE';
@@ -35,7 +46,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
   const nightStatusMsg = () => {
     if (!isNight) return null;
     if (canAct) return null;
-    if (myPlayer?.nightActionCompleted) return 'Action submitted: waiting for next step.';
+    if (myPlayer?.nightActionCompleted) return 'Action submitted & locked: waiting for other players.';
     if (subPhase === 'MAFIA') return 'Step 1: The Godfather and Mafia are choosing their target.';
     if (subPhase === 'DOCTOR') return 'Step 2: The Doctor is selecting a player to heal.';
     if (subPhase === 'POLICE') return 'Step 3: The Police is inspecting a suspect.';
@@ -46,7 +57,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
     if (isMafiaTurn) {
       const isGodfather = myPlayer?.role === 'GODFATHER';
       return {
-        label: isGodfather ? 'GODFATHER ELIMINATE (FINAL Precedence)' : 'ELIMINATE TARGET',
+        label: isGodfather ? 'SELECT TO ELIMINATE' : 'SELECT TO ELIMINATE',
         icon: <Target className="w-4 h-4 text-red-400" />,
         active: 'bg-red-700 text-white',
         idle: 'bg-[#05070c] text-red-300 border-white/10 hover:bg-red-950/60',
@@ -54,7 +65,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
     }
     if (isDoctorTurn) {
       return {
-        label: 'HEAL PLAYER',
+        label: 'SELECT TO HEAL',
         icon: <Shield className="w-4 h-4 text-emerald-400" />,
         active: 'bg-emerald-700 text-white',
         idle: 'bg-[#05070c] text-emerald-300 border-white/10 hover:bg-emerald-950/60',
@@ -62,7 +73,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
     }
     if (isPoliceTurn) {
       return {
-        label: 'INSPECT SUSPECT',
+        label: 'SELECT TO INSPECT',
         icon: <Search className="w-4 h-4 text-blue-400" />,
         active: 'bg-blue-700 text-white',
         idle: 'bg-[#05070c] text-blue-300 border-white/10 hover:bg-blue-950/60',
@@ -83,7 +94,20 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
     onCastVote(selectedVoteTargetId);
   };
 
+  const handleSelectNightCandidate = (targetId: string) => {
+    if (myPlayer?.nightActionCompleted) return;
+    setSelectedNightTargetId(targetId);
+    if (onSelectPendingNightTarget) onSelectPendingNightTarget(targetId);
+  };
+
+  const handleConfirmLockNightAction = () => {
+    if (selectedNightTargetId) {
+      onNightAction(selectedNightTargetId);
+    }
+  };
+
   const selectedTargetPlayer = selectedVoteTargetId ? roomState.players[selectedVoteTargetId] : null;
+  const selectedNightPlayer = selectedNightTargetId ? roomState.players[selectedNightTargetId] : null;
 
   return (
     <div className="space-y-4">
@@ -116,7 +140,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
           )}
         </div>
 
-        {/* Lock Vote Action Banner (Disappears after locking) */}
+        {/* Lock Vote Action Banner */}
         {isVoting && myPlayer?.isAlive && !myPlayer?.isHost && (
           myPlayer.hasVoted ? (
             <div className="mb-4 p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500 text-emerald-300 flex items-center justify-between gap-3 font-mono">
@@ -150,11 +174,51 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
           )
         )}
 
+        {/* Night Target Selection & Lock Banner */}
+        {isNight && (isMafiaTurn || isDoctorTurn || isPoliceTurn) && myPlayer?.isAlive && !myPlayer?.isHost && (
+          myPlayer.nightActionCompleted ? (
+            <div className="mb-4 p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500 text-emerald-300 flex items-center justify-between gap-3 font-mono">
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                <span>YOUR NIGHT ACTION IS CONFIRMED & LOCKED.</span>
+              </div>
+              <span className="bg-emerald-900 border border-emerald-600 text-white px-3 py-1 rounded-xl text-xs font-black">
+                LOCKED
+              </span>
+            </div>
+          ) : (
+            <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-red-950/40 via-purple-950/30 to-[#05070c] border border-red-500/50 flex flex-wrap items-center justify-between gap-3 font-mono">
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4 text-red-400 animate-pulse" />
+                <span className="text-xs text-slate-300">
+                  Chosen Night Target:{' '}
+                  <strong className="text-red-400 font-bold">
+                    {selectedNightPlayer ? selectedNightPlayer.name : 'None Selected (Click candidate below)'}
+                  </strong>
+                </span>
+              </div>
+
+              <button
+                disabled={!selectedNightTargetId}
+                onClick={handleConfirmLockNightAction}
+                className={`py-2 px-6 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-lg transition-all ${
+                  selectedNightTargetId
+                    ? 'bg-red-700 hover:bg-red-600 text-white cursor-pointer shadow-red-900/30'
+                    : 'bg-white/10 text-slate-500 cursor-not-allowed border border-white/10'
+                }`}
+              >
+                <Lock className="w-3.5 h-3.5" /> LOCK NIGHT ACTION NOW
+              </button>
+            </div>
+          )
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {players.map((p) => {
             const isMe        = p.id === roomState.myPlayerId;
-            const isSelected  = selectedVoteTargetId === p.id;
-            const nightTarget = myPlayer?.nightTargetId === p.id;
+            const isSelectedVote  = selectedVoteTargetId === p.id;
+            const isSelectedNight = selectedNightTargetId === p.id;
+            const nightLockedTarget = myPlayer?.nightTargetId === p.id;
             const showVote    = isVoting && myPlayer?.isAlive && !myPlayer?.isHost && !myPlayer?.hasVoted && p.isAlive && !isMe;
             const isTeammate  = isMafiaTurn && (p.team === 'MAFIA' || p.role === 'GODFATHER' || p.role === 'MAFIA');
             const showNight   = canAct && p.isAlive && !isMe && !isTeammate;
@@ -171,7 +235,7 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
             return (
               <div key={p.id} className={`rounded-2xl p-4 border flex flex-col gap-3 transition-all ${
                 !p.isAlive                ? 'bg-[#0f172a]/40 border-white/10 opacity-50 backdrop-blur-md'
-                : isSelected              ? 'bg-[#1e293b]/90 border-[#ffcc00] ring-2 ring-[#ffcc00]/40 shadow-lg shadow-[#ffcc00]/20 backdrop-blur-xl'
+                : isSelectedVote || isSelectedNight ? 'bg-[#1e293b]/90 border-[#ffcc00] ring-2 ring-[#ffcc00]/40 shadow-lg shadow-[#ffcc00]/20 backdrop-blur-xl'
                 : isMe                    ? 'bg-[#1e293b]/80 border-[#ffcc00]/40 backdrop-blur-xl'
                 : 'bg-[#0f172a]/70 border-white/20 hover:border-white/40 backdrop-blur-xl'
               }`}>
@@ -222,12 +286,15 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
                   <div className="flex flex-wrap gap-1 bg-black/50 p-1.5 rounded-lg border border-red-900/40">
                     {targetingTeammates.map((tm) => {
                       const isLocked = tm.nightActionCompleted;
+                      const isGf = tm.role === 'GODFATHER';
                       return (
                         <span
                           key={tm.id}
                           className={`text-[9px] px-1.5 py-0.5 rounded font-black flex items-center gap-1 ${
                             isLocked
                               ? 'bg-emerald-950 text-emerald-300 border border-emerald-600'
+                              : isGf
+                              ? 'bg-purple-950 text-purple-300 border border-purple-600 animate-pulse'
                               : 'bg-red-950 text-red-300 border border-red-600 animate-pulse'
                           }`}
                         >
@@ -244,24 +311,30 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
                   <button
                     onClick={() => handleSelectCandidate(p.id)}
                     className={`w-full py-2.5 rounded-xl text-xs font-black tracking-wider flex items-center justify-center gap-2 border transition-all ${
-                      isSelected
+                      isSelectedVote
                         ? 'bg-[#ffcc00] text-[#05070c] border-[#ffcc00] shadow-lg shadow-[#ffcc00]/20'
                         : 'bg-white/5 text-slate-200 border-white/10 hover:bg-white/10'
                     }`}
                   >
                     <Target className="w-4 h-4" />
-                    {isSelected ? 'SELECTED FOR VOTE' : 'SELECT TO VOTE'}
+                    {isSelectedVote ? 'SELECTED FOR VOTE' : 'SELECT TO VOTE'}
                   </button>
                 )}
 
-                {/* Night action button */}
+                {/* Night action button (selects target first, does not lock prematurely) */}
                 {showNight && act && (
-                  <button onClick={() => onNightAction(p.id)}
+                  <button
+                    onClick={() => handleSelectNightCandidate(p.id)}
                     className={`w-full py-2.5 rounded-xl text-xs font-black tracking-wider flex items-center justify-center gap-2 border transition-all ${
-                      nightTarget ? act.active + ' ring-2 ring-white/30' : act.idle
-                    }`}>
-                    {act.icon}
-                    {nightTarget ? 'TARGET LOCKED' : act.label}
+                      nightLockedTarget
+                        ? 'bg-emerald-800 text-white border-emerald-500 ring-2 ring-emerald-400'
+                        : isSelectedNight
+                        ? 'bg-[#ffcc00] text-[#05070c] border-[#ffcc00] shadow-lg shadow-[#ffcc00]/20'
+                        : act.idle
+                    }`}
+                  >
+                    {nightLockedTarget ? <Lock className="w-4 h-4" /> : act.icon}
+                    {nightLockedTarget ? 'TARGET LOCKED' : isSelectedNight ? 'TARGET SELECTED (Click Lock Above)' : act.label}
                   </button>
                 )}
               </div>
@@ -272,3 +345,4 @@ export const PlayerGrid: React.FC<PlayerGridProps> = ({ roomState, onCastVote, o
     </div>
   );
 };
+
