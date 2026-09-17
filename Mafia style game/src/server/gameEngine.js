@@ -183,22 +183,13 @@ function startGame(room) {
   }
 
   room.dayNumber = 1;
-  room.phase = 'DAY_DISCUSSION';
-  room.nightSubPhase = null;
-  room.phaseTimeRemaining = room.settings.discussionTimerSec || 0;
-  room.isTimerPaused = true;
-  room.nightActions = {
-    mafiaVotes: {},
-    godfatherTarget: null,
-    doctorTarget: null,
-    policeTarget: null,
-  };
+  _startNight(room);
 
   room.logs.push({
     id: Date.now() + '_start',
     timestamp: _ts(),
     type: 'system',
-    message: `🎮 Hidden Agenda started with ${playerIds.length} players! Day ${room.dayNumber} Discussion begins (${room.settings.discussionTimerSec}s).`,
+    message: `🎮 Hidden Agenda started with ${playerIds.length} players! Night 1 begins with the Mafia Syndicate murder phase.`,
   });
 
   return room;
@@ -291,6 +282,7 @@ function resolveDayVoting(room) {
   });
 
   if (!_checkWin(room)) {
+    room.dayNumber += 1;
     _startNight(room);
   }
 }
@@ -318,7 +310,7 @@ function _startNight(room) {
     id: Date.now() + '_night_mafia',
     timestamp: _ts(),
     type: 'night',
-    message: 'Night begins. Step 1: The Godfather & Mafia choose a target to eliminate.',
+    message: `Night ${room.dayNumber} begins. Step 1: The Godfather & Mafia choose a target to eliminate.`,
   });
 }
 
@@ -580,7 +572,6 @@ function _resolveNight(room) {
 }
 
 function _startDay(room) {
-  room.dayNumber += 1;
   room.phase = 'DAY_DISCUSSION';
   room.phaseTimeRemaining = room.settings.discussionTimerSec;
   Object.values(room.players).forEach((p) => { p.hasVoted = false; p.votedForId = null; p.pendingVoteTargetId = null; });

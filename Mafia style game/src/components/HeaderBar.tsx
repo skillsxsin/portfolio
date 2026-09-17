@@ -60,8 +60,12 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({ roomState }) => {
 
         <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap font-mono">
           <div className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl border text-[10px] sm:text-xs font-bold flex items-center gap-1.5 uppercase ${phase.color}`}>
-            {phase.label}
-            {roomState.dayNumber > 0 && <span className="opacity-60 text-[10px] sm:text-xs"> · Day {roomState.dayNumber}</span>}
+            <span>{phase.label}</span>
+            {roomState.dayNumber > 0 && (
+              <span className="opacity-60 text-[10px] sm:text-xs">
+                {' '}· {roomState.phase === 'NIGHT' ? `Night ${roomState.dayNumber}` : `Day ${roomState.dayNumber}`}
+              </span>
+            )}
           </div>
 
           {roomState.isTimerPaused ? (

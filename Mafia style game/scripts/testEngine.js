@@ -44,7 +44,8 @@ test('Game start – host excluded, players assigned roles', () => {
   gameEngine.startGame(room);
   assert(!room.players['h1'].role, 'Host has no role');
   ['p1','p2','p3','p4'].forEach((id) => assert(room.players[id].role, `${id} has role`));
-  assert.strictEqual(room.phase, 'DAY_DISCUSSION');
+  assert.strictEqual(room.phase, 'NIGHT');
+  assert.strictEqual(room.nightSubPhase, 'MAFIA');
 });
 
 // 3. Sequential night: MAFIA → DOCTOR → POLICE
